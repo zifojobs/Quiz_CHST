@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz - Deviens une Sentinelle de la Sécurité !</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --rouge: #C41E3A;
+    --or: #F4C430;
+    --texte: #1a1a1a;
+    --blanc: #FFFFFF;
+    --vert: #2e8b57;
+    --frais: #2e8b57;
+    --caisse: #1565c0;
+    --pgc: #b35c00;
+  }
+
+  body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(160deg, #fff7f8 0%, #fffdf3 100%);
+    color: var(--texte);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .conteneur {
+    width: 100%;
+    max-width: 560px;
+    padding: 16px;
+  }
+
+  .carte {
+    background: var(--blanc);
+    border-radius: 20px;
+    box-shadow: 0 8px 28px rgba(196, 30, 58, 0.12);
+    padding: 28px 22px;
+    margin-top: 16px;
+    animation: apparition 0.45s ease-out;
+  }
+
+  @keyframes apparition {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .cachee { display: none; }
+
+  /* ----- Écran d'accueil ----- */
+  .bandeau-magasins {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .magasin {
+    flex: 1;
+    background: var(--rouge);
+    color: var(--blanc);
+    border-radius: 12px;
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .magasin small {
+    display: block;
+    font-weight: 400;
+    font-size: 11px;
+    opacity: 0.85;
+    margin-top: 2px;
+  }
+
+  .et-commercial {
+    align-self: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--or);
+  }
+
+  h1.titre {
+    text-align: center;
+    color: var(--rouge);
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.25;
+    margin-bottom: 8px;
+  }
+
+  .bouclier {
+    text-align: center;
+    font-size: 56px;
+    margin: 8px 0;
+    animation: pulsation 2s ease-in-out infinite;
+  }
+
+  @keyframes pulsation {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.08); }
+  }
+
+  .identite {
+    text-align: center;
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--texte);
+  }
+
+  .slogan {
+    text-align: center;
+    font-style: italic;
+    color: var(--rouge);
+    font-size: 15px;
+    margin: 6px 0 18px;
+  }
+
+  .slogan::before, .slogan::after { content: " ★ "; color: var(--or); font-style: normal; }
+
+  .intro-texte {
+    text-align: center;
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 18px;
+    color: #444;
+  }
+
+  .champ-nom {
+    width: 100%;
+    max-width: 320px;
+    padding: 12px 16px;
+    margin: 0 auto 18px;
+    display: block;
+    font-family: inherit;
+    font-size: 1rem;
+    border: 2px solid var(--rouge);
+    border-radius: 10px;
+    text-align: center;
+    color: var(--texte);
+  }
+  .champ-nom:focus { outline: 2px solid var(--or); }
+
+  .etiquette-depts {
+    text-align: center;
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 10px;
+  }
+
+  .choix-depts {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .bouton-dept {
+    flex: 1;
+    border: 3px solid #e4d9db;
+    background: var(--blanc);
+    border-radius: 16px;
+    padding: 14px 6px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--texte);
+    cursor: pointer;
+    transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .bouton-dept .emoji-dept { display: block; font-size: 30px; margin-bottom: 6px; }
+  .bouton-dept small { display: block; font-weight: 500; font-size: 11px; color: #777; margin-top: 3px; }
+
+  .bouton-dept:active { transform: scale(0.96); }
+
+  .bouton-dept.choisi-FRAIS  { border-color: var(--frais);  background: #eaf7ef; }
+  .bouton-dept.choisi-CAISSE { border-color: var(--caisse); background: #e8f1fc; }
+  .bouton-dept.choisi-PGC    { border-color: var(--pgc);    background: #fdf1e3; }
+
+  .bouton-principal {
+    display: block;
+    width: 100%;
+    background: var(--rouge);
+    color: var(--blanc);
+    border: none;
+    border-radius: 14px;
+    padding: 18px;
+    font-size: 20px;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+    box-shadow: 0 4px 14px rgba(196, 30, 58, 0.35);
+  }
+
+  .bouton-principal:disabled { opacity: 0.45; cursor: default; box-shadow: none; }
+  .bouton-principal:active:not(:disabled) { transform: scale(0.97); }
+
+  /* ----- Écran question ----- */
+  .barre-haut {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .badge-theme {
+    background: var(--or);
+    color: var(--texte);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .badge-theme.theme-FRAIS  { background: var(--frais);  color: var(--blanc); }
+  .badge-theme.theme-CAISSE { background: var(--caisse); color: var(--blanc); }
+  .badge-theme.theme-PGC    { background: var(--pgc);    color: var(--blanc); }
+
+  .compteur { color: var(--rouge); }
+
+  .barre-progression {
+    width: 100%;
+    height: 10px;
+    background: #f0e6e8;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .barre-remplissage {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--rouge), var(--or));
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+
+  .texte-question {
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 20px;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 12px; }
+
+  .option {
+    width: 100%;
+    text-align: left;
+    background: var(--blanc);
+    border: 2px solid #e4d9db;
+    border-radius: 14px;
+    padding: 16px 14px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--texte);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+    line-height: 1.35;
+  }
+
+  .option:active { transform: scale(0.98); }
+
+  .option.correcte {
+    border-color: var(--vert);
+    background: #eaf7ef;
+    color: #1c5c3a;
+  }
+
+  .option.fausse {
+    border-color: var(--rouge);
+    background: #fdecef;
+    color: var(--rouge);
+  }
+
+  .option:disabled { cursor: default; opacity: 0.92; }
+
+  .feedback {
+    margin-top: 18px;
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 15px;
+    line-height: 1.5;
+    animation: apparition 0.3s ease-out;
+  }
+
+  .feedback.bon { background: #eaf7ef; border-left: 5px solid var(--vert); }
+  .feedback.mauvais { background: #fdecef; border-left: 5px solid var(--rouge); }
+
+  .feedback strong { display: block; margin-bottom: 4px; font-size: 16px; }
+  .feedback.bon strong { color: var(--vert); }
+  .feedback.mauvais strong { color: var(--rouge); }
+
+  .bouton-suivant {
+    margin-top: 16px;
+    display: block;
+    width: 100%;
+    background: var(--or);
+    color: var(--texte);
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    box-shadow: 0 4px 12px rgba(244, 196, 48, 0.4);
+  }
+
+  .bouton-suivant:active { transform: scale(0.97); }
+
+  /* ----- Écran final ----- */
+  .badge-final {
+    text-align: center;
+    font-size: 72px;
+    margin: 10px 0;
+    animation: rebond 0.7s ease;
+  }
+
+  @keyframes rebond {
+    0%   { transform: scale(0); }
+    60%  { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+
+  .titre-badge {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--rouge);
+    margin-bottom: 8px;
+  }
+
+  .nom-joueur {
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--rouge);
+    margin-bottom: 4px;
+  }
+
+  .dept-joueur {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .dept-joueur span {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 5px 16px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--blanc);
+  }
+
+  .dept-joueur .pastille-FRAIS  { background: var(--frais); }
+  .dept-joueur .pastille-CAISSE { background: var(--caisse); }
+  .dept-joueur .pastille-PGC    { background: var(--pgc); }
+
+  .score-final {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .score-final span { color: var(--rouge); font-size: 28px; }
+
+  .message-final {
+    text-align: center;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #444;
+    margin-bottom: 20px;
+  }
+
+  .consigne-participation {
+    background: #FFF8E1;
+    border: 2px dashed var(--or);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    margin: 14px 0;
+  }
+
+  .pied {
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    margin: 18px 0 10px;
+    line-height: 1.5;
+  }
+
+  /* ----- Confettis (badge Or / Argent) ----- */
+  .confetti {
+    position: fixed;
+    top: -20px;
+    font-size: 22px;
+    animation: chute linear forwards;
+    pointer-events: none;
+    z-index: 99;
+  }
+
+  @keyframes chute {
+    to { transform: translateY(110vh) rotate(720deg); opacity: 0.6; }
+  }
+
+  @media (min-width: 480px) {
+    h1.titre { font-size: 32px; }
+    .magasin { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+<div class="conteneur">
+
+  <!-- ÉCRAN D'ACCUEIL -->
+  <div id="ecran-accueil" class="carte">
+    <div class="bandeau-magasins">
+      <div class="magasin">AUCHAN<small>KAOLACK</small></div>
+      <div class="et-commercial">&amp;</div>
+      <div class="magasin">AUCHAN<small>MBACKÉ</small></div>
+    </div>
+    <div class="bouclier">🛡️</div>
+    <h1 class="titre">Deviens une Sentinelle<br>de la Sécurité !</h1>
+    <p class="identite">Les Sentinelles de la Sécurité</p>
+    <p class="slogan">Bien au travail - Mieux dans la vie</p>
+    <p class="intro-texte">
+      10 questions adaptées à TON métier, plus la santé mentale.<br>
+      Réponds, apprends, et décroche ton badge Sentinelle ! 🏆
+    </p>
+    <input id="champ-nom" class="champ-nom" type="text" maxlength="40" placeholder="Ton prénom et nom" autocomplete="name">
+    <p class="etiquette-depts">Choisis ton département :</p>
+    <div class="choix-depts">
+      <button class="bouton-dept" data-dept="FRAIS"><span class="emoji-dept">🥩</span>FRAIS<small>Boucherie, F&amp;L, Surgelés...</small></button>
+      <button class="bouton-dept" data-dept="CAISSE"><span class="emoji-dept">🛒</span>CAISSE<small>Points de vente</small></button>
+      <button class="bouton-dept" data-dept="PGC"><span class="emoji-dept">📦</span>PGC<small>Grande conso</small></button>
+    </div>
+    <button class="bouton-principal" id="btn-commencer" disabled>Commencer ▶</button>
+  </div>
+
+  <!-- ÉCRAN QUESTION -->
+  <div id="ecran-question" class="carte cachee">
+    <div class="barre-haut">
+      <span class="badge-theme" id="theme-question"></span>
+      <span class="compteur" id="compteur-question"></span>
+    </div>
+    <div class="barre-progression">
+      <div class="barre-remplissage" id="barre-remplissage"></div>
+    </div>
+    <p class="texte-question" id="texte-question"></p>
+    <div class="options" id="zone-options"></div>
+    <div id="zone-feedback"></div>
+  </div>
+
+  <!-- ÉCRAN FINAL -->
+  <div id="ecran-final" class="carte cachee">
+    <div class="bandeau-magasins">
+      <div class="magasin">AUCHAN<small>KAOLACK</small></div>
+      <div class="et-commercial">&amp;</div>
+      <div class="magasin">AUCHAN<small>MBACKÉ</small></div>
+    </div>
+    <div class="badge-final" id="badge-final"></div>
+    <h2 class="titre-badge" id="titre-badge"></h2>
+    <p class="nom-joueur" id="nom-joueur"></p>
+    <p class="dept-joueur" id="dept-joueur"></p>
+    <p class="score-final">Ton score : <span id="score-final"></span> / 10</p>
+    <p class="message-final" id="message-final"></p>
+    <p class="consigne-participation">📸 Fais une capture de cet écran et envoie-la au responsable CHST pour enregistrer ta participation !</p>
+    <p class="identite">Les Sentinelles de la Sécurité</p>
+    <p class="slogan">Bien au travail - Mieux dans la vie</p>
+    <button class="bouton-principal" id="btn-rejouer">🔄 Rejouer</button>
+  </div>
+
+  <p class="pied">CHST — AUCHAN KAOLACK &amp; AUCHAN MBACKÉ<br>Comité d'Hygiène, de Sécurité et des Conditions de Travail</p>
+</div>
+
+<script>
+"use strict";
+
+// 7 questions métier par département + 3 questions communes = quiz de 10
+var QUESTIONS_METIER = {
+
+  FRAIS: [
+    {
+      question: "Tu remarques un sol mouillé dans ton rayon. Que fais-tu en premier ?",
+      options: [
+        "Je continue mon travail, quelqu'un d'autre s'en occupera",
+        "Je signale la zone (panneau / alerte) et je fais nettoyer immédiatement",
+        "Je marche plus vite pour éviter de glisser"
+      ],
+      bonne: 1,
+      explication: "Un sol mouillé non signalé est l'une des premières causes de chute en magasin. Signale TOUJOURS la zone avant tout, puis fais nettoyer. C'est exactement ce qui aurait pu éviter l'accident d'avril."
+    },
+    {
+      question: "Comment utiliser un couteau ou un outil tranchant en toute sécurité ?",
+      options: [
+        "Couper vers soi pour avoir plus de contrôle",
+        "Utiliser n'importe quel couteau, l'important c'est d'aller vite",
+        "Couper loin de soi, avec un outil affûté et un gant anti-coupure si prévu"
+      ],
+      bonne: 2,
+      explication: "On coupe toujours en éloignant la lame du corps, avec un outil bien affûté (un couteau émoussé force et dérape) et les EPI prévus comme le gant anti-coupure."
+    },
+    {
+      question: "Tu travailles en chambre froide. Quelle est la bonne pratique ?",
+      options: [
+        "Porter les EPI thermiques et limiter le temps d'exposition au froid",
+        "Y rester le plus longtemps possible pour finir d'un coup",
+        "Entrer sans veste si c'est juste pour 10 minutes"
+      ],
+      bonne: 0,
+      explication: "Le froid fatigue le corps et augmente les risques (TMS, engourdissement). Porte toujours tes EPI thermiques et alterne les passages au froid avec des temps au chaud."
+    },
+    {
+      question: "Avant d'entrer en chambre froide, quelle précaution dois-tu prendre ?",
+      options: [
+        "Entrer discrètement pour ne déranger personne",
+        "Prévenir un collègue et vérifier que la porte s'ouvre bien de l'intérieur",
+        "Bloquer la porte avec un carton pour gagner du temps"
+      ],
+      bonne: 1,
+      explication: "Un collaborateur est déjà resté coincé 30 minutes dans une chambre froide ! Préviens toujours un collègue, vérifie l'ouverture intérieure et repère le dispositif d'alerte. Ne bloque jamais la porte : elle doit rester aux normes."
+    },
+    {
+      question: "Tu dois nettoyer la trancheuse ou une machine de découpe. Que fais-tu d'abord ?",
+      options: [
+        "Je la débranche (ou je la consigne) avant tout nettoyage",
+        "Je nettoie pendant qu'elle tourne, c'est plus efficace",
+        "Je passe juste un coup d'éponge rapide sans l'éteindre"
+      ],
+      bonne: 0,
+      explication: "Machine débranchée ou consignée AVANT tout nettoyage : c'est la règle absolue. La majorité des accidents graves sur machines arrivent pendant le nettoyage ou la maintenance."
+    },
+    {
+      question: "Tu te coupes légèrement en travaillant. Que fais-tu ?",
+      options: [
+        "Je continue, ce n'est qu'une petite coupure",
+        "Je mets un pansement et je n'en parle à personne",
+        "Je me soigne ET je déclare la blessure au responsable / registre des accidents"
+      ],
+      bonne: 2,
+      explication: "Toute blessure, même légère, se soigne ET se déclare. C'est important pour ta santé (infection, suivi) et pour le comité : chaque déclaration aide à prévenir le prochain accident."
+    },
+    {
+      question: "Tu portes une caisse de fruits & légumes lourde. Quelle est la bonne technique ?",
+      options: [
+        "Dos courbé et bras tendus pour aller vite",
+        "Genoux pliés, dos droit, caisse près du corps — ou un chariot si c'est trop lourd",
+        "Je la fais glisser au sol sur toute la distance"
+      ],
+      bonne: 1,
+      explication: "Comme en manutention : genoux pliés, dos droit, charge près du corps. Et si c'est trop lourd ou trop volumineux, utilise un chariot ou demande de l'aide — ton dos te dira merci."
+    }
+  ],
+
+  CAISSE: [
+    {
+      question: "Quelle est la bonne posture en caisse pour éviter les TMS ?",
+      options: [
+        "Penché en avant pour aller plus vite",
+        "Dos droit, bras à 90°, pieds à plat",
+        "Assis sur le bord du siège, jambes croisées"
+      ],
+      bonne: 1,
+      explication: "La posture de référence : dos droit, bras pliés à 90°, pieds à plat au sol. Elle protège ton dos, tes épaules et tes poignets contre les troubles musculo-squelettiques (TMS)."
+    },
+    {
+      question: "Pourquoi faire des micro-pauses régulières en caisse ?",
+      options: [
+        "Pour discuter avec les collègues",
+        "Ce n'est pas utile si on est jeune",
+        "Pour détendre les muscles et prévenir les douleurs liées aux gestes répétitifs"
+      ],
+      bonne: 2,
+      explication: "Les gestes répétitifs fatiguent muscles et articulations, quel que soit l'âge. Quelques secondes pour s'étirer et changer de position préviennent les TMS sur le long terme."
+    },
+    {
+      question: "Un client devient agressif à ta caisse. Que fais-tu ?",
+      options: [
+        "Je réponds sur le même ton pour me défendre",
+        "Je reste calme, je ne réponds pas à la provocation et j'alerte mon responsable ou le bouton d'alerte",
+        "Je quitte la caisse en courant sans prévenir personne"
+      ],
+      bonne: 1,
+      explication: "Garde ton calme, ne réponds jamais à la provocation, et alerte immédiatement ton responsable ou utilise le bouton d'alerte. Ta sécurité passe avant tout, tu n'es pas seul(e)."
+    },
+    {
+      question: "Le bouton d'alerte de ta caisse ne fonctionne plus. Que fais-tu ?",
+      options: [
+        "Je le signale immédiatement : il doit être réparé sans attendre",
+        "Tant pis, il servira rarement de toute façon",
+        "J'attends la vérification mensuelle du CHST"
+      ],
+      bonne: 0,
+      explication: "Le bouton d'alerte, c'est ta ligne de vie en cas d'agression ou d'urgence. S'il est en panne, signale-le IMMÉDIATEMENT. Le CHST fait une vérification mensuelle, mais une panne n'attend pas."
+    },
+    {
+      question: "Un client pose un pack d'eau ou un article très lourd sur le tapis. Que fais-tu ?",
+      options: [
+        "Je le soulève à bout de bras pour le passer au scan",
+        "Je le fais glisser sur le tapis ou j'utilise la douchette sans le soulever",
+        "Je le repousse vers le client sans le scanner"
+      ],
+      bonne: 1,
+      explication: "Ne soulève jamais les articles lourds : fais-les glisser et scanne-les avec la douchette directement dans le chariot. Des milliers d'articles par jour = protège tes épaules et tes poignets."
+    },
+    {
+      question: "En début de poste, que fais-tu avec ton siège de caisse ?",
+      options: [
+        "Je le règle à ma taille : hauteur, dossier, appuis",
+        "Je garde le réglage du collègue précédent",
+        "Je préfère rester debout toute la journée"
+      ],
+      bonne: 0,
+      explication: "Chaque corps est différent : règle ton siège à TA taille en début de poste (hauteur, dossier). Un siège mal réglé, c'est des douleurs au dos et aux épaules en fin de journée."
+    },
+    {
+      question: "Fin de journée, tu sens ton dos et tes épaules raides. Quelle bonne habitude adopter ?",
+      options: [
+        "M'étirer quelques secondes et varier mes positions pendant le service",
+        "Serrer les dents, ça passera",
+        "Prendre l'habitude de me pencher davantage pour compenser"
+      ],
+      bonne: 0,
+      explication: "Étirements courts, changements de position, micro-pauses : ces petites habitudes préviennent les TMS. Et si une douleur persiste, parles-en au médecin du travail — c'est son rôle."
+    }
+  ],
+
+  PGC: [
+    {
+      question: "Pour soulever un carton lourd, la bonne technique est :",
+      options: [
+        "Plier les genoux, garder le dos droit et la charge près du corps",
+        "Se pencher en avant et tirer d'un coup sec",
+        "Soulever avec une seule main pour aller plus vite"
+      ],
+      bonne: 0,
+      explication: "Plier les genoux, dos droit, charge près du corps, à deux mains : ce sont les jambes qui travaillent, pas le dos. C'est LA règle d'or de la manutention."
+    },
+    {
+      question: "Une charge te semble trop lourde ou trop encombrante. Que fais-tu ?",
+      options: [
+        "Je force, une vraie Sentinelle n'abandonne jamais",
+        "Je la traîne par terre sur toute la distance",
+        "Je demande de l'aide à un collègue ou j'utilise un équipement (transpalette, chariot)"
+      ],
+      bonne: 2,
+      explication: "Une vraie Sentinelle protège son dos ! Demander de l'aide ou utiliser un équipement n'est pas une faiblesse : c'est la règle. Forcer seul = blessure assurée tôt ou tard."
+    },
+    {
+      question: "Pourquoi garder la charge près du corps quand on la porte ?",
+      options: [
+        "Pour ne pas salir le carton",
+        "Parce que plus la charge est loin du corps, plus elle pèse sur le dos",
+        "Pour mieux voir devant soi"
+      ],
+      bonne: 1,
+      explication: "Une charge tenue à bout de bras peut peser jusqu'à 10 fois plus sur la colonne vertébrale. Près du corps, l'effort est réparti et ton dos est protégé."
+    },
+    {
+      question: "Tu dois attraper un produit stocké en hauteur. Que fais-tu ?",
+      options: [
+        "Je grimpe sur les rayonnages, c'est plus rapide",
+        "J'utilise un escabeau stable prévu pour ça",
+        "Je saute pour l'attraper du bout des doigts"
+      ],
+      bonne: 1,
+      explication: "On ne grimpe JAMAIS sur les rayonnages : ils ne sont pas conçus pour supporter une personne. Escabeau stable, posé à plat, et un collègue pas loin si la charge est lourde."
+    },
+    {
+      question: "Avec un transpalette, quelle est la bonne pratique ?",
+      options: [
+        "Tirer le transpalette derrière soi dans les allées encombrées",
+        "Le surcharger pour faire moins de voyages",
+        "Vérifier son état, pousser plutôt que tirer, et circuler dans des allées dégagées"
+      ],
+      bonne: 2,
+      explication: "On POUSSE un transpalette (on ne le tire pas : risque pour le dos et les talons), on vérifie son état avant usage et on circule dans des allées dégagées, à vitesse de marche."
+    },
+    {
+      question: "Comment remplir un rayonnage en toute sécurité ?",
+      options: [
+        "Les charges lourdes en bas, les légères en haut, sans surcharger",
+        "Les charges lourdes en haut pour les avoir sous la main",
+        "Empiler le maximum, on verra bien si ça tient"
+      ],
+      bonne: 0,
+      explication: "Lourd en bas, léger en haut : c'est la règle. Un rayonnage surchargé en hauteur peut basculer ou laisser tomber des produits sur toi ou sur un client."
+    },
+    {
+      question: "Pour ouvrir les cartons au cutter, la bonne pratique est :",
+      options: [
+        "Lame bien sortie et geste rapide vers soi",
+        "Couper loin de soi, lame courte, et rentrer la lame dès que j'ai fini",
+        "Utiliser des ciseaux ou mes clés, c'est pareil"
+      ],
+      bonne: 1,
+      explication: "Cutter à lame rétractable : on coupe loin de soi, avec le minimum de lame sortie, et on RENTRE la lame dès la coupe finie. Un cutter qui traîne lame sortie, c'est une coupure assurée."
+    }
+  ]
+};
+
+// 3 questions communes à tous les départements (focus 2026 : santé mentale)
+var QUESTIONS_COMMUNES = [
+  {
+    theme: "SANTÉ MENTALE",
+    question: "Quels signes peuvent indiquer qu'un collègue traverse une détresse mentale ?",
+    options: [
+      "Il est toujours souriant et ponctuel",
+      "Isolement, irritabilité, fatigue inhabituelle, baisse de motivation",
+      "Il prend ses pauses normalement"
+    ],
+    bonne: 1,
+    explication: "Isolement, irritabilité, fatigue persistante, changements d'humeur ou de comportement sont des signaux d'alerte. Les remarquer chez un collègue, c'est déjà l'aider. Ose en parler avec bienveillance."
+  },
+  {
+    theme: "SANTÉ MENTALE",
+    question: "Demander de l'aide quand on se sent dépassé, c'est :",
+    options: [
+      "Une faiblesse qu'il faut cacher",
+      "Réservé aux personnes fragiles",
+      "Un acte de courage et la première étape pour aller mieux"
+    ],
+    bonne: 2,
+    explication: "Demander de l'aide n'est JAMAIS une faiblesse : c'est un acte de courage. Parle à un collègue de confiance, à ton responsable ou au CHST. C'est la priorité 2026 de notre comité."
+  },
+  {
+    theme: "GÉNÉRAL",
+    question: "Tu repères un danger dans le magasin (câble qui traîne, étagère instable...). À qui le signaler ?",
+    options: [
+      "À personne, ce n'est pas mon rayon",
+      "Au CHST ou à mon responsable, immédiatement",
+      "J'attends la prochaine réunion mensuelle pour en parler"
+    ],
+    bonne: 1,
+    explication: "Tout danger se signale IMMÉDIATEMENT au CHST ou à ton responsable. Chaque signalement peut éviter un accident. Le CHST est là pour ça : c'est ton comité, ta voix sécurité !"
+  }
+];
+
+// Barème /10 aligné sur la feuille « Suivi Quiz » du tracker
+var BADGES = [
+  { min: 9, emoji: "🏆", titre: "Sentinelle d'Or", message: "Exceptionnel ! Tu maîtrises la sécurité de ton métier et le bien-être au travail. Tu es un exemple pour tes collègues. Partage ce quiz autour de toi !" },
+  { min: 6, emoji: "🥈", titre: "Sentinelle d'Argent", message: "Très beau score ! Encore quelques bons réflexes à consolider et l'or est à toi. Relis les explications et retente ta chance !" },
+  { min: 4, emoji: "🥉", titre: "Sentinelle de Bronze", message: "Bon début ! Tu connais les bases, mais certains réflexes de sécurité méritent d'être renforcés. Rejoue pour progresser !" },
+  { min: 0, emoji: "💪", titre: "Apprenti(e) Sentinelle", message: "Rejoue pour progresser ! Chaque partie t'apprend les bons gestes de TON métier. Les Sentinelles ne lâchent rien — la sécurité, ça s'apprend." }
+];
+
+var ecranAccueil = document.getElementById("ecran-accueil");
+var ecranQuestion = document.getElementById("ecran-question");
+var ecranFinal = document.getElementById("ecran-final");
+var themeQuestion = document.getElementById("theme-question");
+var compteurQuestion = document.getElementById("compteur-question");
+var barreRemplissage = document.getElementById("barre-remplissage");
+var texteQuestion = document.getElementById("texte-question");
+var zoneOptions = document.getElementById("zone-options");
+var zoneFeedback = document.getElementById("zone-feedback");
+var btnCommencer = document.getElementById("btn-commencer");
+
+var questionsPartie = [];
+var indexCourant = 0;
+var score = 0;
+var reponseDonnee = false;
+var nomJoueur = "";
+var prenomJoueur = "";
+var deptChoisi = "";
+
+function melanger(tableau) {
+  var copie = tableau.slice();
+  for (var i = copie.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = copie[i];
+    copie[i] = copie[j];
+    copie[j] = tmp;
+  }
+  return copie;
+}
+
+function choisirDept(evenement) {
+  deptChoisi = evenement.currentTarget.getAttribute("data-dept");
+  var boutons = document.querySelectorAll(".bouton-dept");
+  for (var i = 0; i < boutons.length; i++) {
+    boutons[i].classList.remove("choisi-FRAIS", "choisi-CAISSE", "choisi-PGC");
+    if (boutons[i].getAttribute("data-dept") === deptChoisi) {
+      boutons[i].classList.add("choisi-" + deptChoisi);
+    }
+  }
+  btnCommencer.disabled = false;
+}
+
+function demarrerQuiz() {
+  if (!deptChoisi) return;
+
+  var saisie = document.getElementById("champ-nom").value.trim();
+  if (saisie) {
+    nomJoueur = saisie;
+    prenomJoueur = saisie.split(" ")[0];
+  } else {
+    nomJoueur = "";
+    prenomJoueur = "Sentinelle";
+  }
+
+  // 7 questions métier (thème = département) + 3 communes, le tout mélangé
+  var metier = QUESTIONS_METIER[deptChoisi].map(function (q) {
+    return { theme: deptChoisi, question: q.question, options: q.options, bonne: q.bonne, explication: q.explication };
+  });
+  questionsPartie = melanger(metier.concat(QUESTIONS_COMMUNES));
+
+  indexCourant = 0;
+  score = 0;
+  ecranAccueil.classList.add("cachee");
+  ecranFinal.classList.add("cachee");
+  ecranQuestion.classList.remove("cachee");
+  afficherQuestion();
+}
+
+function afficherQuestion() {
+  reponseDonnee = false;
+  var q = questionsPartie[indexCourant];
+
+  themeQuestion.textContent = q.theme;
+  themeQuestion.className = "badge-theme" + (QUESTIONS_METIER[q.theme] ? " theme-" + q.theme : "");
+  compteurQuestion.textContent = "Question " + (indexCourant + 1) + " / " + questionsPartie.length;
+  barreRemplissage.style.width = ((indexCourant / questionsPartie.length) * 100) + "%";
+  texteQuestion.textContent = q.question;
+  zoneFeedback.innerHTML = "";
+  zoneOptions.innerHTML = "";
+
+  for (var i = 0; i < q.options.length; i++) {
+    var bouton = document.createElement("button");
+    bouton.className = "option";
+    bouton.textContent = q.options[i];
+    bouton.setAttribute("data-index", String(i));
+    bouton.addEventListener("click", gererReponse);
+    zoneOptions.appendChild(bouton);
+  }
+
+  window.scrollTo(0, 0);
+}
+
+function gererReponse(evenement) {
+  if (reponseDonnee) return;
+  reponseDonnee = true;
+
+  var q = questionsPartie[indexCourant];
+  var choix = parseInt(evenement.currentTarget.getAttribute("data-index"), 10);
+  var estBon = (choix === q.bonne);
+
+  if (estBon) score++;
+
+  var boutons = zoneOptions.querySelectorAll(".option");
+  for (var i = 0; i < boutons.length; i++) {
+    boutons[i].disabled = true;
+    if (i === q.bonne) {
+      boutons[i].classList.add("correcte");
+    } else if (i === choix) {
+      boutons[i].classList.add("fausse");
+    }
+  }
+
+  var feedback = document.createElement("div");
+  feedback.className = "feedback " + (estBon ? "bon" : "mauvais");
+  var entete = document.createElement("strong");
+  entete.textContent = estBon ? "✓ Bonne réponse, " + prenomJoueur + " !" : "✗ Pas tout à fait, " + prenomJoueur + "...";
+  var explication = document.createElement("span");
+  explication.textContent = q.explication;
+  feedback.appendChild(entete);
+  feedback.appendChild(explication);
+
+  var boutonSuivant = document.createElement("button");
+  boutonSuivant.className = "bouton-suivant";
+  boutonSuivant.textContent = (indexCourant < questionsPartie.length - 1) ? "Question suivante ▶" : "Voir mon résultat 🏁";
+  boutonSuivant.addEventListener("click", questionSuivante);
+
+  zoneFeedback.innerHTML = "";
+  zoneFeedback.appendChild(feedback);
+  zoneFeedback.appendChild(boutonSuivant);
+}
+
+function questionSuivante() {
+  indexCourant++;
+  if (indexCourant < questionsPartie.length) {
+    afficherQuestion();
+  } else {
+    afficherResultat();
+  }
+}
+
+function lancerConfettis() {
+  var formes = ["🎉", "⭐", "🛡️", "✨"];
+  for (var i = 0; i < 24; i++) {
+    var c = document.createElement("span");
+    c.className = "confetti";
+    c.textContent = formes[i % formes.length];
+    c.style.left = (Math.random() * 100) + "vw";
+    c.style.animationDuration = (2 + Math.random() * 2.5) + "s";
+    c.style.animationDelay = (Math.random() * 0.8) + "s";
+    document.body.appendChild(c);
+    setTimeout(function (el) { return function () { el.remove(); }; }(c), 6000);
+  }
+}
+
+function afficherResultat() {
+  ecranQuestion.classList.add("cachee");
+  ecranFinal.classList.remove("cachee");
+
+  var badge = BADGES[BADGES.length - 1];
+  for (var i = 0; i < BADGES.length; i++) {
+    if (score >= BADGES[i].min) {
+      badge = BADGES[i];
+      break;
+    }
+  }
+
+  document.getElementById("badge-final").textContent = badge.emoji;
+  document.getElementById("titre-badge").textContent = badge.titre;
+  var dateJeu = new Date().toLocaleDateString("fr-FR");
+  document.getElementById("nom-joueur").textContent = nomJoueur ? nomJoueur + " — le " + dateJeu : "Le " + dateJeu;
+  document.getElementById("dept-joueur").innerHTML = '<span class="pastille-' + deptChoisi + '">' + deptChoisi + "</span>";
+  document.getElementById("score-final").textContent = String(score);
+  document.getElementById("message-final").textContent = badge.message;
+
+  if (score >= 6) lancerConfettis();
+  window.scrollTo(0, 0);
+}
+
+var boutonsDept = document.querySelectorAll(".bouton-dept");
+for (var b = 0; b < boutonsDept.length; b++) {
+  boutonsDept[b].addEventListener("click", choisirDept);
+}
+document.getElementById("btn-commencer").addEventListener("click", demarrerQuiz);
+document.getElementById("btn-rejouer").addEventListener("click", function () {
+  ecranFinal.classList.add("cachee");
+  ecranAccueil.classList.remove("cachee");
+  window.scrollTo(0, 0);
+});
+</script>
+</body>
+</html>
