@@ -440,8 +440,8 @@
     <p class="identite">Les Sentinelles de la Sécurité</p>
     <p class="slogan">Bien au travail - Mieux dans la vie</p>
     <p class="intro-texte">
-      10 questions adaptées à TON métier, plus la santé mentale.<br>
-      Réponds, apprends, et décroche ton badge Sentinelle ! 🏆
+      13 questions exigeantes : ton métier, la santé mentale et les règles du CHST.<br>
+      Lis bien : plusieurs réponses semblent justes, une seule est la bonne. 🏆
     </p>
     <input id="champ-nom" class="champ-nom" type="text" maxlength="40" placeholder="Ton prénom et nom" autocomplete="name">
     <p class="etiquette-depts">Choisis ton département :</p>
@@ -478,7 +478,7 @@
     <h2 class="titre-badge" id="titre-badge"></h2>
     <p class="nom-joueur" id="nom-joueur"></p>
     <p class="dept-joueur" id="dept-joueur"></p>
-    <p class="score-final">Ton score : <span id="score-final"></span> / 10</p>
+    <p class="score-final">Ton score : <span id="score-final"></span> / 13</p>
     <p class="message-final" id="message-final"></p>
     <p class="consigne-participation">📸 Fais une capture de cet écran et envoie-la au responsable CHST pour enregistrer ta participation !</p>
     <p class="identite">Les Sentinelles de la Sécurité</p>
@@ -492,272 +492,324 @@
 <script>
 "use strict";
 
-// 7 questions métier par département + 3 questions communes = quiz de 10
+// 8 questions métier par département + 5 questions communes (3 santé mentale + 2 règles CHST) = quiz de 13
 var QUESTIONS_METIER = {
 
   FRAIS: [
     {
-      question: "Tu remarques un sol mouillé dans ton rayon. Que fais-tu en premier ?",
+      question: "Sol mouillé dans ton rayon, en pleine affluence. Quelle est la priorité immédiate ?",
       options: [
-        "Je continue mon travail, quelqu'un d'autre s'en occupera",
-        "Je signale la zone (panneau / alerte) et je fais nettoyer immédiatement",
-        "Je marche plus vite pour éviter de glisser"
+        "Aller chercher de quoi nettoyer et essuyer le sol au plus vite",
+        "Baliser / signaler la zone d'abord, puis faire nettoyer",
+        "Prévenir mon responsable et attendre ses consignes"
       ],
       bonne: 1,
-      explication: "Un sol mouillé non signalé est l'une des premières causes de chute en magasin. Signale TOUJOURS la zone avant tout, puis fais nettoyer. C'est exactement ce qui aurait pu éviter l'accident d'avril."
+      explication: "Signaler d'abord protège tout le monde dans la seconde. Si tu pars chercher le matériel sans baliser, la zone reste un piège pendant ce temps. On signale, PUIS on nettoie. C'est ce qui aurait pu éviter l'accident d'avril."
     },
     {
-      question: "Comment utiliser un couteau ou un outil tranchant en toute sécurité ?",
+      question: "Ton couteau de découpe est devenu un peu émoussé. Que fais-tu ?",
       options: [
-        "Couper vers soi pour avoir plus de contrôle",
-        "Utiliser n'importe quel couteau, l'important c'est d'aller vite",
-        "Couper loin de soi, avec un outil affûté et un gant anti-coupure si prévu"
+        "Je l'utilise en appuyant plus fort, il coupe encore",
+        "Je le garde pour les tâches faciles seulement",
+        "Je le fais affûter ou je le remplace avant de continuer"
       ],
       bonne: 2,
-      explication: "On coupe toujours en éloignant la lame du corps, avec un outil bien affûté (un couteau émoussé force et dérape) et les EPI prévus comme le gant anti-coupure."
+      explication: "Un couteau émoussé est plus DANGEREUX qu'un couteau affûté : il force, glisse et dérape. On l'affûte ou on le remplace, et on coupe toujours en éloignant la lame du corps, gant anti-coupure si prévu."
     },
     {
-      question: "Tu travailles en chambre froide. Quelle est la bonne pratique ?",
+      question: "Tu enchaînes plusieurs passages en chambre froide aujourd'hui. La meilleure pratique ?",
       options: [
-        "Porter les EPI thermiques et limiter le temps d'exposition au froid",
-        "Y rester le plus longtemps possible pour finir d'un coup",
-        "Entrer sans veste si c'est juste pour 10 minutes"
+        "EPI thermiques, et alterner les passages au froid avec des temps au chaud",
+        "EPI thermiques, et rester jusqu'à tout finir pour ne pas multiplier les passages",
+        "Travailler vite sans EPI pour sortir plus tôt du froid"
       ],
       bonne: 0,
-      explication: "Le froid fatigue le corps et augmente les risques (TMS, engourdissement). Porte toujours tes EPI thermiques et alterne les passages au froid avec des temps au chaud."
+      explication: "Le froid fatigue le corps et augmente les risques (TMS, engourdissement). Rester longtemps « pour finir d'un coup » est justement le piège : on porte les EPI ET on alterne froid / chaud pour récupérer."
     },
     {
-      question: "Avant d'entrer en chambre froide, quelle précaution dois-tu prendre ?",
+      question: "Tu dois entrer seul(e) en chambre froide. Quelle précaution est PRIORITAIRE ?",
       options: [
-        "Entrer discrètement pour ne déranger personne",
-        "Prévenir un collègue et vérifier que la porte s'ouvre bien de l'intérieur",
-        "Bloquer la porte avec un carton pour gagner du temps"
-      ],
-      bonne: 1,
-      explication: "Un collaborateur est déjà resté coincé 30 minutes dans une chambre froide ! Préviens toujours un collègue, vérifie l'ouverture intérieure et repère le dispositif d'alerte. Ne bloque jamais la porte : elle doit rester aux normes."
-    },
-    {
-      question: "Tu dois nettoyer la trancheuse ou une machine de découpe. Que fais-tu d'abord ?",
-      options: [
-        "Je la débranche (ou je la consigne) avant tout nettoyage",
-        "Je nettoie pendant qu'elle tourne, c'est plus efficace",
-        "Je passe juste un coup d'éponge rapide sans l'éteindre"
+        "Vérifier que la porte s'ouvre de l'intérieur et repérer le bouton d'alerte",
+        "Prévenir un collègue que j'y vais",
+        "Caler la porte entrouverte pour être sûr de pouvoir ressortir"
       ],
       bonne: 0,
-      explication: "Machine débranchée ou consignée AVANT tout nettoyage : c'est la règle absolue. La majorité des accidents graves sur machines arrivent pendant le nettoyage ou la maintenance."
+      explication: "Prévenir un collègue est bien, mais si tu te retrouves seul(e), ta sécurité tient à l'ouverture intérieure et au bouton d'alerte — un collaborateur est resté coincé 30 min ! Caler la porte rompt la chaîne du froid et n'est pas une solution."
     },
     {
-      question: "Tu te coupes légèrement en travaillant. Que fais-tu ?",
+      question: "Tu dois nettoyer la trancheuse. À quel moment la consignes-tu (débranches) ?",
       options: [
-        "Je continue, ce n'est qu'une petite coupure",
-        "Je mets un pansement et je n'en parle à personne",
-        "Je me soigne ET je déclare la blessure au responsable / registre des accidents"
+        "Avant tout nettoyage, même un simple coup d'éponge",
+        "Seulement pour un nettoyage en profondeur",
+        "Après avoir retiré les gros résidus à la main, moteur à l'arrêt"
+      ],
+      bonne: 0,
+      explication: "Machine consignée AVANT de mettre les mains, toujours — même pour un nettoyage rapide. La plupart des accidents graves sur machine arrivent pendant le nettoyage. « Moteur à l'arrêt » ne suffit pas : on débranche / consigne."
+    },
+    {
+      question: "Petite coupure au doigt. Tu la nettoies et la protèges. Et ensuite ?",
+      options: [
+        "Rien d'autre, c'est vraiment bénin",
+        "J'en parle au collègue d'à côté, sans plus",
+        "Je la déclare au registre des accidents, même bénigne"
       ],
       bonne: 2,
-      explication: "Toute blessure, même légère, se soigne ET se déclare. C'est important pour ta santé (infection, suivi) et pour le comité : chaque déclaration aide à prévenir le prochain accident."
+      explication: "Toute blessure se soigne ET se déclare, même minime. Pour ta santé (risque d'infection) et pour le comité : chaque déclaration aide à repérer un danger et à éviter le prochain accident."
     },
     {
-      question: "Tu portes une caisse de fruits & légumes lourde. Quelle est la bonne technique ?",
+      question: "Une caisse de fruits & légumes lourde à déplacer sur 15 mètres. Le meilleur choix ?",
       options: [
-        "Dos courbé et bras tendus pour aller vite",
-        "Genoux pliés, dos droit, caisse près du corps — ou un chariot si c'est trop lourd",
-        "Je la fais glisser au sol sur toute la distance"
+        "La porter genoux pliés, dos droit, près du corps",
+        "Utiliser un chariot : sur la distance, même une bonne posture fatigue le dos",
+        "La porter vite pour limiter la durée de l'effort"
       ],
       bonne: 1,
-      explication: "Comme en manutention : genoux pliés, dos droit, charge près du corps. Et si c'est trop lourd ou trop volumineux, utilise un chariot ou demande de l'aide — ton dos te dira merci."
+      explication: "La bonne posture est indispensable, mais elle ne remplace pas l'équipement : pour une charge lourde sur 15 m, le chariot (ou l'aide d'un collègue) protège vraiment ton dos. La technique sert pour le geste ponctuel."
+    },
+    {
+      question: "Dans le labo boucherie, le sol reste gras malgré le nettoyage. Le bon réflexe au quotidien ?",
+      options: [
+        "Porter des sabots à semelle antidérapante et essuyer les projections au fur et à mesure",
+        "Marcher à petits pas en faisant bien attention",
+        "Poser des cartons aux endroits les plus glissants"
+      ],
+      bonne: 0,
+      explication: "Sabots antidérapants + nettoyage continu des projections : c'est ce que le comité a acté (revêtements antidérapants et sabots adhésifs pour les bouchers). Le carton au sol glisse aussi et masque le danger."
     }
   ],
 
   CAISSE: [
     {
-      question: "Quelle est la bonne posture en caisse pour éviter les TMS ?",
+      question: "La posture de référence en caisse pour protéger dos, épaules et poignets ?",
       options: [
-        "Penché en avant pour aller plus vite",
-        "Dos droit, bras à 90°, pieds à plat",
-        "Assis sur le bord du siège, jambes croisées"
+        "Dos calé en arrière, jambes tendues sous le tapis",
+        "Dos droit, avant-bras proches de 90°, pieds à plat au sol",
+        "Légèrement penché vers le client pour limiter les torsions"
       ],
       bonne: 1,
-      explication: "La posture de référence : dos droit, bras pliés à 90°, pieds à plat au sol. Elle protège ton dos, tes épaules et tes poignets contre les troubles musculo-squelettiques (TMS)."
+      explication: "Dos droit, avant-bras pliés vers 90°, pieds à plat : c'est la position qui répartit l'effort. Se pencher vers le client ou caler le dos en arrière crée justement des tensions au dos et aux épaules (TMS)."
     },
     {
-      question: "Pourquoi faire des micro-pauses régulières en caisse ?",
+      question: "Pourquoi les micro-pauses et étirements comptent, même quand on est jeune et en forme ?",
       options: [
-        "Pour discuter avec les collègues",
-        "Ce n'est pas utile si on est jeune",
-        "Pour détendre les muscles et prévenir les douleurs liées aux gestes répétitifs"
-      ],
-      bonne: 2,
-      explication: "Les gestes répétitifs fatiguent muscles et articulations, quel que soit l'âge. Quelques secondes pour s'étirer et changer de position préviennent les TMS sur le long terme."
-    },
-    {
-      question: "Un client devient agressif à ta caisse. Que fais-tu ?",
-      options: [
-        "Je réponds sur le même ton pour me défendre",
-        "Je reste calme, je ne réponds pas à la provocation et j'alerte mon responsable ou le bouton d'alerte",
-        "Je quitte la caisse en courant sans prévenir personne"
-      ],
-      bonne: 1,
-      explication: "Garde ton calme, ne réponds jamais à la provocation, et alerte immédiatement ton responsable ou utilise le bouton d'alerte. Ta sécurité passe avant tout, tu n'es pas seul(e)."
-    },
-    {
-      question: "Le bouton d'alerte de ta caisse ne fonctionne plus. Que fais-tu ?",
-      options: [
-        "Je le signale immédiatement : il doit être réparé sans attendre",
-        "Tant pis, il servira rarement de toute façon",
-        "J'attends la vérification mensuelle du CHST"
+        "Les gestes répétitifs usent muscles et articulations à TOUT âge",
+        "Surtout pour le moral pendant les heures creuses",
+        "Ce n'est vraiment utile qu'à partir de 45 ans"
       ],
       bonne: 0,
-      explication: "Le bouton d'alerte, c'est ta ligne de vie en cas d'agression ou d'urgence. S'il est en panne, signale-le IMMÉDIATEMENT. Le CHST fait une vérification mensuelle, mais une panne n'attend pas."
+      explication: "Les TMS ne préviennent pas par l'âge : c'est la répétition du même geste qui use, jeune ou pas. Quelques secondes d'étirement et un changement de position régulier protègent sur le long terme."
     },
     {
-      question: "Un client pose un pack d'eau ou un article très lourd sur le tapis. Que fais-tu ?",
+      question: "Un client hausse le ton et devient menaçant à ta caisse. Ta priorité ?",
       options: [
-        "Je le soulève à bout de bras pour le passer au scan",
-        "Je le fais glisser sur le tapis ou j'utilise la douchette sans le soulever",
-        "Je le repousse vers le client sans le scanner"
-      ],
-      bonne: 1,
-      explication: "Ne soulève jamais les articles lourds : fais-les glisser et scanne-les avec la douchette directement dans le chariot. Des milliers d'articles par jour = protège tes épaules et tes poignets."
-    },
-    {
-      question: "En début de poste, que fais-tu avec ton siège de caisse ?",
-      options: [
-        "Je le règle à ma taille : hauteur, dossier, appuis",
-        "Je garde le réglage du collègue précédent",
-        "Je préfère rester debout toute la journée"
+        "Rester calme, ne pas répondre à la provocation, et alerter (responsable / bouton d'alerte)",
+        "Gérer seul(e) pour ne pas faire d'esclandre devant la file",
+        "Lui donner raison sur tout pour qu'il parte vite"
       ],
       bonne: 0,
-      explication: "Chaque corps est différent : règle ton siège à TA taille en début de poste (hauteur, dossier). Un siège mal réglé, c'est des douleurs au dos et aux épaules en fin de journée."
+      explication: "Tu n'as pas à gérer seul(e) une agression. Garde ton calme, ne réponds pas à la provocation et alerte tout de suite. Ni l'affrontement, ni la soumission : on sécurise et on fait intervenir."
     },
     {
-      question: "Fin de journée, tu sens ton dos et tes épaules raides. Quelle bonne habitude adopter ?",
+      question: "En début de poste, tu découvres que ton bouton d'alerte ne répond pas. Que fais-tu ?",
       options: [
-        "M'étirer quelques secondes et varier mes positions pendant le service",
-        "Serrer les dents, ça passera",
-        "Prendre l'habitude de me pencher davantage pour compenser"
+        "Je le signale tout de suite pour réparation, c'est prioritaire",
+        "Je le note pour la vérification mensuelle du CHST",
+        "Je m'arrange avec la caisse voisine en attendant"
       ],
       bonne: 0,
-      explication: "Étirements courts, changements de position, micro-pauses : ces petites habitudes préviennent les TMS. Et si une douleur persiste, parles-en au médecin du travail — c'est son rôle."
+      explication: "Le bouton d'alerte est ta ligne de vie : une panne se signale IMMÉDIATEMENT, elle n'attend pas le contrôle mensuel. Compter sur la caisse voisine ne te protège pas si tu es seul(e) face à un client."
+    },
+    {
+      question: "Un pack d'eau de 9 litres arrive sur le tapis. Le bon geste ?",
+      options: [
+        "Le faire glisser et le scanner à la douchette dans le chariot, sans le soulever",
+        "Le soulever à deux mains en gardant bien le dos droit",
+        "Le passer rapidement d'une seule main pour ne pas bloquer la file"
+      ],
+      bonne: 0,
+      explication: "Même avec une bonne posture, soulever des charges des centaines de fois par jour use les épaules et les poignets. On ne soulève pas : on fait glisser et on scanne à la douchette directement dans le chariot."
+    },
+    {
+      question: "Tu prends ta caisse : le siège est réglé pour le collègue précédent. Que fais-tu ?",
+      options: [
+        "Je le règle à MA taille (hauteur, dossier) avant de commencer",
+        "Je le laisse comme ça, je m'adapterai",
+        "Je le baisse au minimum, c'est plus reposant"
+      ],
+      bonne: 0,
+      explication: "Chaque corps est différent : 30 secondes pour régler le siège à ta taille évitent des heures de douleurs au dos et aux épaules. Un siège mal réglé travaille contre toi tout le poste."
+    },
+    {
+      question: "Depuis deux semaines, une douleur au poignet revient chaque fin de journée. Le bon réflexe ?",
+      options: [
+        "En parler au médecin du travail : une douleur qui s'installe n'est pas normale",
+        "Attendre encore, ça finira sûrement par passer tout seul",
+        "Prendre un antidouleur avant chaque poste"
+      ],
+      bonne: 0,
+      explication: "Une douleur qui revient et s'installe est un signal de TMS débutant : c'est exactement le rôle du médecin du travail. L'antidouleur masque le problème sans le régler — et l'aggrave souvent."
+    },
+    {
+      question: "Pendant le rush, des cartons et emballages vides s'accumulent autour de ta caisse. Que fais-tu ?",
+      options: [
+        "Je dégage la zone dès que possible : un passage encombré = risque de chute",
+        "Je les empile sur le côté, je rangerai à la fermeture",
+        "Je continue, l'agent d'entretien passera bien"
+      ],
+      bonne: 0,
+      explication: "Une zone de passage encombrée est une chute qui attend d'arriver — pour toi comme pour un client. On dégage au fil de l'eau ; « je rangerai plus tard » laisse le danger en place pendant des heures."
     }
   ],
 
   PGC: [
     {
-      question: "Pour soulever un carton lourd, la bonne technique est :",
+      question: "La technique d'or pour soulever un carton lourd posé au sol ?",
       options: [
-        "Plier les genoux, garder le dos droit et la charge près du corps",
-        "Se pencher en avant et tirer d'un coup sec",
-        "Soulever avec une seule main pour aller plus vite"
+        "Genoux pliés, dos droit, charge près du corps, à deux mains",
+        "Jambes tendues et dos arrondi pour utiliser la force du dos",
+        "Genoux pliés, mais charge tenue à bout de bras pour voir ses pieds"
       ],
       bonne: 0,
-      explication: "Plier les genoux, dos droit, charge près du corps, à deux mains : ce sont les jambes qui travaillent, pas le dos. C'est LA règle d'or de la manutention."
+      explication: "Ce sont les jambes qui doivent travailler, pas le dos. Plier les genoux ne suffit pas si la charge est loin du corps : il faut la garder COLLÉE à soi, sinon l'effort sur la colonne explose."
     },
     {
-      question: "Une charge te semble trop lourde ou trop encombrante. Que fais-tu ?",
+      question: "Sur une palette de packs, chaque carton est à la limite de ce que tu peux porter. Que fais-tu ?",
       options: [
-        "Je force, une vraie Sentinelle n'abandonne jamais",
-        "Je la traîne par terre sur toute la distance",
-        "Je demande de l'aide à un collègue ou j'utilise un équipement (transpalette, chariot)"
-      ],
-      bonne: 2,
-      explication: "Une vraie Sentinelle protège son dos ! Demander de l'aide ou utiliser un équipement n'est pas une faiblesse : c'est la règle. Forcer seul = blessure assurée tôt ou tard."
-    },
-    {
-      question: "Pourquoi garder la charge près du corps quand on la porte ?",
-      options: [
-        "Pour ne pas salir le carton",
-        "Parce que plus la charge est loin du corps, plus elle pèse sur le dos",
-        "Pour mieux voir devant soi"
+        "J'y vais carton par carton, lentement, ça devrait aller",
+        "Aide d'un collègue ou transpalette : on ne force pas seul à la limite",
+        "Je porte double pour faire deux fois moins de voyages"
       ],
       bonne: 1,
-      explication: "Une charge tenue à bout de bras peut peser jusqu'à 10 fois plus sur la colonne vertébrale. Près du corps, l'effort est réparti et ton dos est protégé."
+      explication: "« Lentement et carton par carton » à la limite de ses forces, c'est le dos qui lâche au bout de quelques répétitions. À la limite, on demande de l'aide ou on prend un équipement — ce n'est pas une faiblesse, c'est la règle."
     },
     {
-      question: "Tu dois attraper un produit stocké en hauteur. Que fais-tu ?",
+      question: "Pourquoi tenir la charge contre soi plutôt qu'à bout de bras ?",
       options: [
-        "Je grimpe sur les rayonnages, c'est plus rapide",
-        "J'utilise un escabeau stable prévu pour ça",
-        "Je saute pour l'attraper du bout des doigts"
+        "Près du corps, on voit mieux où l'on marche",
+        "À bout de bras, l'effort sur la colonne vertébrale est démultiplié",
+        "Ça permet de porter beaucoup plus lourd sans risque"
       ],
       bonne: 1,
-      explication: "On ne grimpe JAMAIS sur les rayonnages : ils ne sont pas conçus pour supporter une personne. Escabeau stable, posé à plat, et un collègue pas loin si la charge est lourde."
+      explication: "Une charge à bout de bras peut peser jusqu'à 10 fois plus sur la colonne. La tenir près du corps réduit cet effet de levier — ça ne t'autorise pas pour autant à dépasser ta limite de poids."
     },
     {
-      question: "Avec un transpalette, quelle est la bonne pratique ?",
+      question: "Un produit est stocké en hauteur, hors de portée. Le bon réflexe ?",
       options: [
-        "Tirer le transpalette derrière soi dans les allées encombrées",
-        "Le surcharger pour faire moins de voyages",
-        "Vérifier son état, pousser plutôt que tirer, et circuler dans des allées dégagées"
-      ],
-      bonne: 2,
-      explication: "On POUSSE un transpalette (on ne le tire pas : risque pour le dos et les talons), on vérifie son état avant usage et on circule dans des allées dégagées, à vitesse de marche."
-    },
-    {
-      question: "Comment remplir un rayonnage en toute sécurité ?",
-      options: [
-        "Les charges lourdes en bas, les légères en haut, sans surcharger",
-        "Les charges lourdes en haut pour les avoir sous la main",
-        "Empiler le maximum, on verra bien si ça tient"
+        "Un escabeau stable, posé à plat, prévu pour ça",
+        "Monter sur le premier niveau du rayonnage, juste le temps de l'attraper",
+        "Tirer le carton du dessous pour faire descendre la pile"
       ],
       bonne: 0,
-      explication: "Lourd en bas, léger en haut : c'est la règle. Un rayonnage surchargé en hauteur peut basculer ou laisser tomber des produits sur toi ou sur un client."
+      explication: "On ne grimpe JAMAIS sur un rayonnage : il n'est pas conçu pour supporter une personne. Escabeau stable, et un collègue pas loin si la charge est lourde. Tirer la pile par le bas, c'est tout recevoir dessus."
     },
     {
-      question: "Pour ouvrir les cartons au cutter, la bonne pratique est :",
+      question: "Tu dois déplacer une charge avec un transpalette manuel. La bonne pratique ?",
       options: [
-        "Lame bien sortie et geste rapide vers soi",
-        "Couper loin de soi, lame courte, et rentrer la lame dès que j'ai fini",
-        "Utiliser des ciseaux ou mes clés, c'est pareil"
+        "Le pousser devant soi, allées dégagées, après avoir vérifié son état",
+        "Le tirer derrière soi pour mieux le guider dans les virages",
+        "Le charger un peu au-delà de la limite pour finir en un seul voyage"
       ],
-      bonne: 1,
-      explication: "Cutter à lame rétractable : on coupe loin de soi, avec le minimum de lame sortie, et on RENTRE la lame dès la coupe finie. Un cutter qui traîne lame sortie, c'est une coupure assurée."
+      bonne: 0,
+      explication: "On POUSSE un transpalette (le tirer expose le dos et les talons), on vérifie son état avant et on circule dans des allées dégagées, à allure de marche. Le surcharger le rend incontrôlable."
+    },
+    {
+      question: "Comment répartir les charges dans un rayonnage de stockage ?",
+      options: [
+        "Lourd en bas, léger en haut, sans dépasser la charge maximale",
+        "Lourd en hauteur pour libérer le sol et mieux circuler",
+        "Peu importe l'ordre, tant que tout tient sur les étagères"
+      ],
+      bonne: 0,
+      explication: "Lourd en bas, léger en haut : un rayonnage chargé en haut peut basculer ou lâcher des produits sur toi ou un client. Et on ne dépasse jamais la charge maximale indiquée."
+    },
+    {
+      question: "Tu ouvres des cartons au cutter toute la matinée. La bonne habitude ?",
+      options: [
+        "Couper loin de soi, lame courte, et rentrer la lame après CHAQUE carton",
+        "Laisser la lame sortie entre deux cartons pour gagner du temps",
+        "Sortir la lame au maximum pour couper en un seul passage"
+      ],
+      bonne: 0,
+      explication: "Cutter à lame rétractable : on coupe loin de soi, lame sortie au minimum, et on RENTRE la lame entre chaque carton. Une lame qui reste sortie sur l'établi ou dans la poche, c'est la coupure garantie."
+    },
+    {
+      question: "Un transpalette électrique est disponible pour une grosse charge. Avant de l'utiliser ?",
+      options: [
+        "Je vérifie d'être formé / habilité à son usage et je contrôle son état",
+        "Je l'utilise comme un transpalette manuel, c'est juste plus rapide",
+        "Je le prends sans hésiter : motorisé = plus aucun effort, donc aucun risque"
+      ],
+      bonne: 0,
+      explication: "Le comité a acté l'arrivée de transpalettes électriques. Un engin motorisé n'est pas « sans risque » : il demande une formation / habilitation et une vérification de l'état avant chaque usage (freins, batterie, fourches)."
     }
   ]
 };
 
-// 3 questions communes à tous les départements (focus 2026 : santé mentale)
+// 5 questions communes à tous : 3 santé mentale (priorité 2026) + 2 règles du CHST
 var QUESTIONS_COMMUNES = [
   {
     theme: "SANTÉ MENTALE",
-    question: "Quels signes peuvent indiquer qu'un collègue traverse une détresse mentale ?",
+    question: "Quel ENSEMBLE de signes doit t'alerter sur la détresse possible d'un collègue ?",
     options: [
-      "Il est toujours souriant et ponctuel",
-      "Isolement, irritabilité, fatigue inhabituelle, baisse de motivation",
-      "Il prend ses pauses normalement"
+      "Isolement soudain, irritabilité, fatigue inhabituelle, baisse de motivation",
+      "Il prend toutes ses pauses et part à l'heure",
+      "Il a changé de coiffure et de tenue ces derniers temps"
     ],
-    bonne: 1,
-    explication: "Isolement, irritabilité, fatigue persistante, changements d'humeur ou de comportement sont des signaux d'alerte. Les remarquer chez un collègue, c'est déjà l'aider. Ose en parler avec bienveillance."
+    bonne: 0,
+    explication: "Ce sont les changements de comportement — surtout plusieurs à la fois — qui alertent : repli, irritabilité, fatigue persistante, démotivation. Prendre ses pauses normalement ou changer de look n'a rien d'inquiétant."
   },
   {
     theme: "SANTÉ MENTALE",
-    question: "Demander de l'aide quand on se sent dépassé, c'est :",
+    question: "Un collègue te confie qu'il se sent dépassé et anxieux. La meilleure réaction ?",
     options: [
-      "Une faiblesse qu'il faut cacher",
-      "Réservé aux personnes fragiles",
-      "Un acte de courage et la première étape pour aller mieux"
+      "L'écouter sans juger et l'orienter (responsable, CHST, médecin du travail)",
+      "Lui dire de se changer les idées, que ça arrive à tout le monde",
+      "Ne rien dire ni faire, pour respecter sa vie privée"
     ],
-    bonne: 2,
-    explication: "Demander de l'aide n'est JAMAIS une faiblesse : c'est un acte de courage. Parle à un collègue de confiance, à ton responsable ou au CHST. C'est la priorité 2026 de notre comité."
+    bonne: 0,
+    explication: "Écouter sans juger et orienter vers les bonnes ressources, c'est l'aide la plus utile. Minimiser (« ça arrive à tout le monde ») ferme la porte ; se taire le laisse seul. La santé mentale est la priorité 2026 du comité."
   },
   {
-    theme: "GÉNÉRAL",
-    question: "Tu repères un danger dans le magasin (câble qui traîne, étagère instable...). À qui le signaler ?",
+    theme: "SANTÉ MENTALE",
+    question: "Toi-même, tu te sens régulièrement à bout en fin de semaine. Le bon réflexe ?",
     options: [
-      "À personne, ce n'est pas mon rayon",
-      "Au CHST ou à mon responsable, immédiatement",
-      "J'attends la prochaine réunion mensuelle pour en parler"
+      "En parler tôt (collègue de confiance, responsable, médecin du travail) avant que ça s'installe",
+      "Serrer les dents : parler de son stress au travail peut être mal vu",
+      "Attendre les congés, ça repartira tout seul"
     ],
-    bonne: 1,
-    explication: "Tout danger se signale IMMÉDIATEMENT au CHST ou à ton responsable. Chaque signalement peut éviter un accident. Le CHST est là pour ça : c'est ton comité, ta voix sécurité !"
+    bonne: 0,
+    explication: "Demander de l'aide n'est jamais une faiblesse, c'est un acte de courage — et plus on en parle tôt, plus c'est facile à dénouer. Attendre ou cacher laisse le stress s'installer."
+  },
+  {
+    theme: "RÈGLES CHST",
+    question: "À quoi sert avant tout un CHST (Comité d'Hygiène, de Sécurité et des Conditions de Travail) ?",
+    options: [
+      "Prévenir les risques professionnels et améliorer les conditions de travail",
+      "Sanctionner les salariés qui ne respectent pas les consignes",
+      "Remplacer la direction pour les décisions RH"
+    ],
+    bonne: 0,
+    explication: "Le CHST (décret sénégalais 94-244 du 07/03/1994) a une mission de PRÉVENTION et d'amélioration des conditions de travail — pas de sanction. C'est ton comité et ta voix sécurité, pas un tribunal."
+  },
+  {
+    theme: "RÈGLES CHST",
+    question: "Le médecin du travail, quel est son rôle principal ?",
+    options: [
+      "Un rôle surtout préventif : il suit ta santé au travail et adapte les postes",
+      "Il soigne tes maladies courantes, comme un médecin de ville",
+      "Il décide seul des arrêts maladie et des licenciements"
+    ],
+    bonne: 0,
+    explication: "Le médecin du travail a un rôle essentiellement PRÉVENTIF (décret sur la médecine du travail) : suivi de ta santé, adaptation des postes, alerte sur les risques. Il ne remplace pas ton médecin traitant."
   }
 ];
 
-// Barème /10 aligné sur la feuille « Suivi Quiz » du tracker
+// Barème /13 (quiz durci) — à reporter sur la feuille « Suivi Quiz » du tracker
 var BADGES = [
-  { min: 9, emoji: "🏆", titre: "Sentinelle d'Or", message: "Exceptionnel ! Tu maîtrises la sécurité de ton métier et le bien-être au travail. Tu es un exemple pour tes collègues. Partage ce quiz autour de toi !" },
-  { min: 6, emoji: "🥈", titre: "Sentinelle d'Argent", message: "Très beau score ! Encore quelques bons réflexes à consolider et l'or est à toi. Relis les explications et retente ta chance !" },
-  { min: 4, emoji: "🥉", titre: "Sentinelle de Bronze", message: "Bon début ! Tu connais les bases, mais certains réflexes de sécurité méritent d'être renforcés. Rejoue pour progresser !" },
-  { min: 0, emoji: "💪", titre: "Apprenti(e) Sentinelle", message: "Rejoue pour progresser ! Chaque partie t'apprend les bons gestes de TON métier. Les Sentinelles ne lâchent rien — la sécurité, ça s'apprend." }
+  { min: 11, emoji: "🏆", titre: "Sentinelle d'Or", message: "Exceptionnel ! Sur un quiz exigeant, tu maîtrises la sécurité de ton métier, la santé mentale ET les règles du comité. Un vrai exemple. Partage ce quiz autour de toi !" },
+  { min: 8, emoji: "🥈", titre: "Sentinelle d'Argent", message: "Très beau score sur un quiz pas facile ! Encore quelques réflexes à consolider et l'or est à toi. Relis les explications et retente ta chance !" },
+  { min: 5, emoji: "🥉", titre: "Sentinelle de Bronze", message: "Bon parcours ! Tu connais les bases, mais certains pièges méritent d'être revus. Rejoue : c'est en se trompant qu'on retient les bons gestes." },
+  { min: 0, emoji: "💪", titre: "Apprenti(e) Sentinelle", message: "Ce quiz est volontairement exigeant — ne te décourage pas ! Relis bien les explications et rejoue. Les Sentinelles ne lâchent rien : la sécurité, ça s'apprend." }
 ];
 
 var ecranAccueil = document.getElementById("ecran-accueil");
@@ -814,7 +866,7 @@ function demarrerQuiz() {
     prenomJoueur = "Sentinelle";
   }
 
-  // 7 questions métier (thème = département) + 3 communes, le tout mélangé
+  // 8 questions métier (thème = département) + 5 communes, le tout mélangé
   var metier = QUESTIONS_METIER[deptChoisi].map(function (q) {
     return { theme: deptChoisi, question: q.question, options: q.options, bonne: q.bonne, explication: q.explication };
   });
@@ -934,7 +986,7 @@ function afficherResultat() {
   document.getElementById("score-final").textContent = String(score);
   document.getElementById("message-final").textContent = badge.message;
 
-  if (score >= 6) lancerConfettis();
+  if (score >= 8) lancerConfettis();
   window.scrollTo(0, 0);
 }
 
