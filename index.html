@@ -809,7 +809,7 @@ function construireQuestionsQualif() {
 }
 
 async function commencerQualif() {
-  if (quizTermine()) { messageAccueil("<strong>Le tournoi est terminé.</strong> Tu peux consulter le classement ci-dessous. Merci !", true); verrouillerSiTermine(); return; }
+  if (quizTermine("qualif")) { messageAccueil("<strong>Les qualifications sont terminées.</strong> Tu peux consulter le classement ci-dessous. Merci !", true); verrouillerSiTermine(); return; }
   var saisie = $("champ-nom").value.trim();
   if (!saisie) { messageAccueil("Merci d'indiquer ton nom pour participer au tournoi."); return; }
   if (!deptChoisi || (deptChoisi === "FRAIS" && !sousRayonChoisi)) { messageAccueil("Choisis ton département (et ton rayon)."); return; }
@@ -851,7 +851,7 @@ function messageAccueil(html, important) {
    FINALE
    ============================================================ */
 async function commencerFinale() {
-  if (quizTermine()) { messageFinale("<strong>Le tournoi est terminé.</strong> Consulte le classement de la finale ci-dessous.", true); verrouillerSiTermine(); return; }
+  if (quizTermine("finale")) { messageFinale("<strong>La finale est terminée.</strong> Consulte le classement de la finale ci-dessous.", true); verrouillerSiTermine(); return; }
   var saisie = $("champ-nom-finale").value.trim();
   if (!saisie) { messageFinale("Indique ton nom (celui utilisé en qualifications)."); return; }
   messageFinale("");
@@ -1209,8 +1209,12 @@ function lancerConfettis() {
 /* ============================================================
    COMPTE À REBOURS (clôture du tournoi)
    ============================================================ */
-var DATE_LIMITE = new Date("2026-07-06T23:59:59Z");   // dim. 6 juillet 2026, 23h59 (heure Sénégal/UTC)
-function quizTermine() { return Date.now() > DATE_LIMITE.getTime(); }
+var DATE_LIMITE = new Date("2026-07-06T23:59:59Z");          // qualifs : dim. 6 juillet 2026, 23h59 (heure Sénégal/UTC)
+var DATE_LIMITE_FINALE = new Date("2026-07-13T23:59:59Z");   // finale : dim. 13 juillet 2026, 23h59 (+1 semaine)
+function quizTermine(phase) {
+  var d = phase === "finale" ? DATE_LIMITE_FINALE : DATE_LIMITE;
+  return Date.now() > d.getTime();
+}
 
 function majCompteRebours() {
   var zone = $("compte-rebours");
@@ -1219,7 +1223,10 @@ function majCompteRebours() {
   var reste = DATE_LIMITE.getTime() - Date.now();
   if (reste <= 0) {
     zone.classList.add("fini");
-    zone.innerHTML = '<div class="cr-titre">⛔ Le tournoi est terminé — merci à toutes les Sentinelles !<br>Le classement reste consultable ci-dessous.</div>';
+    var msg = quizTermine("finale")
+      ? "⛔ Le tournoi est terminé — merci à toutes les Sentinelles !<br>Le classement reste consultable ci-dessous."
+      : "⏹️ Les qualifications sont terminées.<br>La <b>finale des champions</b> reste ouverte jusqu'au dimanche 13 juillet. Classement ci-dessous.";
+    zone.innerHTML = '<div class="cr-titre">' + msg + "</div>";
     verrouillerSiTermine();
     return;
   }
@@ -1233,9 +1240,8 @@ function majCompteRebours() {
 }
 
 function verrouillerSiTermine() {
-  if (!quizTermine()) return;
-  var b1 = $("btn-commencer"); if (b1) { b1.disabled = true; b1.textContent = "Tournoi terminé"; }
-  var b2 = $("btn-commencer-finale"); if (b2) { b2.disabled = true; b2.textContent = "Tournoi terminé"; }
+  if (quizTermine("qualif")) { var b1 = $("btn-commencer"); if (b1) { b1.disabled = true; b1.textContent = "Qualifications terminées"; } }
+  if (quizTermine("finale")) { var b2 = $("btn-commencer-finale"); if (b2) { b2.disabled = true; b2.textContent = "Finale terminée"; } }
 }
 
 /* ============================================================
