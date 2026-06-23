@@ -308,6 +308,16 @@
 
   .pied-page { text-align: center; font-size: 11.5px; color: #a59c8d; margin-top: 20px; line-height: 1.6; letter-spacing: .3px; }
 
+  .compteur-part { margin: 4px 0 18px; }
+  .cp-texte { font-size: 13.5px; color: var(--rouge-fonce); text-align: center; margin-bottom: 6px; }
+  .cp-texte b { font-size: 17px; }
+  .cp-barre { height: 9px; background: #efe7d9; border-radius: 99px; overflow: hidden; }
+  .cp-barre i { display: block; height: 100%; width: 0; border-radius: 99px;
+    background: linear-gradient(90deg, #C41E3A, #F4C430); transition: width .8s ease; }
+  .temps-final { text-align: center; font-size: 14px; color: var(--rouge-fonce); margin: 2px 0 6px; }
+  .temps-final .aide-temps { display: block; font-size: 11.5px; color: #a59c8d; margin-top: 2px; }
+  .liste-rang .tps { display: block; color: #b3aa9d; font-size: 11.5px; font-weight: 400; margin-top: 1px; }
+
   .confetti { position: fixed; top: -24px; font-size: 20px; animation: chute linear forwards; pointer-events: none; z-index: 99; }
   @keyframes chute { to { transform: translateY(112vh) rotate(680deg); opacity: .55; } }
 
@@ -333,6 +343,11 @@
       <strong>13 questions exigeantes</strong> : ton métier, la santé mentale et les règles du CHST.
       Le meilleur score de chaque département file en <strong>finale</strong> pour le titre de Grande Sentinelle. 🏆
     </p>
+
+    <div id="compteur-participation" class="compteur-part cachee">
+      <div class="cp-texte"><b id="cp-nb">0</b> / 53 collègues ont déjà joué</div>
+      <div class="cp-barre"><i id="cp-remplissage"></i></div>
+    </div>
 
     <label class="titre-champ" for="champ-nom">Ton nom</label>
     <input id="champ-nom" class="champ-nom" type="text" maxlength="40" placeholder="Prénom et nom" autocomplete="name">
@@ -414,8 +429,10 @@
     </div>
     <h2 class="titre-badge" id="titre-badge"></h2>
     <p class="ligne-joueur" id="ligne-joueur"></p>
+    <p class="temps-final" id="temps-final"></p>
     <p class="message-final" id="message-final"></p>
     <div id="zone-rang"></div>
+    <button class="btn btn-or" id="btn-partager">📲 Partager mon score (WhatsApp)</button>
     <button class="btn btn-primaire" id="btn-voir-classement-2">📊 Voir le classement</button>
     <p class="note-bas">Ton score est enregistré automatiquement.</p>
   </div>
@@ -696,6 +713,12 @@ var BADGES = [
 var nomJoueur = "", prenomJoueur = "Sentinelle", deptChoisi = "", sousRayonChoisi = "";
 var phaseEnCours = "qualif";   // 'qualif' ou 'finale'
 var questionsPartie = [], indexCourant = 0, score = 0, reponseDonnee = false, totalQuestions = 13;
+var tempsDebut = 0, dureeMs = 0;
+function fmtTemps(ms) {
+  if (ms == null || isNaN(ms)) return "—";
+  var s = Math.round(ms / 1000), m = Math.floor(s / 60); s = s % 60;
+  return m > 0 ? (m + " min " + (s < 10 ? "0" + s : s) + " s") : (s + " s");
+}
 
 function $(id) { return document.getElementById(id); }
 function montrer(id) {
@@ -861,12 +884,14 @@ function messageFinale(html, important) {
 }
 
 async function chargerChampions() {
-  var res = await db.from("participations").select("nom,nom_normalise,departement,score,created_at").eq("phase", "qualif");
+  var res = await db.from("participations").select("nom,nom_normalise,departement,score,duree_ms,created_at").eq("phase", "qualif");
   if (res.error) throw res.error;
   var champ = {};
   (res.data || []).forEach(function (r) {
-    var d = r.departement;
-    if (!champ[d] || r.score > champ[d].score || (r.score === champ[d].score && r.created_at < champ[d].created_at)) champ[d] = r;
+    var d = r.departement, c = champ[d];
+    if (!c || r.score > c.score
+        || (r.score === c.score && (r.duree_ms == null ? Infinity : r.duree_ms) < (c.duree_ms == null ? Infinity : c.duree_ms))
+        || (r.score === c.score && r.duree_ms === c.duree_ms && r.created_at < c.created_at)) champ[d] = r;
   });
   return champ;
 }
@@ -876,6 +901,7 @@ async function chargerChampions() {
    ============================================================ */
 function lancerPartie() {
   indexCourant = 0; score = 0;
+  tempsDebut = Date.now();
   montrer("ecran-question");
   afficherQuestion();
 }
@@ -935,6 +961,7 @@ function questionSuivante() {
 async function terminer() {
   montrer("ecran-final");
   var total = questionsPartie.length;
+  dureeMs = Date.now() - tempsDebut;
 
   // anneau
   var circ = 2 * Math.PI * 64;
@@ -960,6 +987,7 @@ async function terminer() {
   $("total-final").textContent = "/" + total;
   var pastille = phaseEnCours === "finale" ? "" : ' <span class="pastille-dept d-' + deptChoisi + '">' + deptChoisi + (sousRayonChoisi ? " · " + sousRayonChoisi : "") + "</span>";
   $("ligne-joueur").innerHTML = "<b>" + echapper(nomJoueur) + "</b>" + pastille + " — le " + new Date().toLocaleDateString("fr-FR");
+  $("temps-final").innerHTML = "⏱️ Temps : <b>" + fmtTemps(dureeMs) + "</b> <span class='aide-temps'>(départage à score égal : le plus rapide gagne)</span>";
   $("zone-rang").innerHTML = "";
 
   if (score >= (phaseEnCours === "finale" ? 8 : 8)) lancerConfettis();
@@ -970,7 +998,7 @@ async function terminer() {
       nom: nomJoueur, nom_normalise: normaliser(nomJoueur),
       departement: phaseEnCours === "finale" ? "FINALE" : deptChoisi,
       sous_rayon: phaseEnCours === "finale" ? null : (sousRayonChoisi || null),
-      score: score, total: total, phase: phaseEnCours
+      score: score, total: total, duree_ms: dureeMs, phase: phaseEnCours
     };
     var ins = await db.from("participations").insert(ligne);
     if (ins.error) {
@@ -986,8 +1014,9 @@ async function terminer() {
 
 async function afficherRang() {
   try {
-    var res = await db.from("participations").select("nom_normalise,score,created_at")
-      .eq("phase", "qualif").eq("departement", deptChoisi).order("score", { ascending: false }).order("created_at", { ascending: true });
+    var res = await db.from("participations").select("nom_normalise,score,duree_ms,created_at")
+      .eq("phase", "qualif").eq("departement", deptChoisi)
+      .order("score", { ascending: false }).order("duree_ms", { ascending: true, nullsFirst: false }).order("created_at", { ascending: true });
     if (res.error || !res.data) return;
     var moi = normaliser(nomJoueur), rang = 0;
     for (var i = 0; i < res.data.length; i++) if (res.data[i].nom_normalise === moi) { rang = i + 1; break; }
@@ -1015,8 +1044,9 @@ function ouvrirClassement(depart) {
 async function chargerClassement(dept) {
   $("contenu-classement").innerHTML = '<p class="chargement">Chargement…</p>';
   try {
-    var res = await db.from("participations").select("nom,sous_rayon,score,total,created_at")
-      .eq("phase", "qualif").eq("departement", dept).order("score", { ascending: false }).order("created_at", { ascending: true });
+    var res = await db.from("participations").select("nom,sous_rayon,score,total,duree_ms,created_at")
+      .eq("phase", "qualif").eq("departement", dept)
+      .order("score", { ascending: false }).order("duree_ms", { ascending: true, nullsFirst: false }).order("created_at", { ascending: true });
     if (res.error) throw res.error;
     rendreClassement(res.data || []);
   } catch (e) {
@@ -1045,6 +1075,7 @@ function rendreClassement(rows) {
   for (var i = 0; i < rows.length; i++)
     html += "<li><span class='rang'>" + (i + 1) + "</span><span class='nm'>" + echapper(rows[i].nom) +
             (rows[i].sous_rayon ? "<small>" + echapper(rows[i].sous_rayon) + "</small>" : "") +
+            "<small class='tps'>⏱️ " + fmtTemps(rows[i].duree_ms) + "</small>" +
             "</span><span class='sc'>" + rows[i].score + "<small style='color:#b3aa9d;font-size:12px'>/" + rows[i].total + "</small></span></li>";
   html += "</ol>";
   $("contenu-classement").innerHTML = html;
@@ -1059,8 +1090,9 @@ async function ouvrirClassementFinale() {
   $("onglets-classement").innerHTML = "";
   $("contenu-classement").innerHTML = '<p class="chargement">Chargement…</p>';
   try {
-    var res = await db.from("participations").select("nom,score,total,created_at")
-      .eq("phase", "finale").order("score", { ascending: false }).order("created_at", { ascending: true });
+    var res = await db.from("participations").select("nom,score,total,duree_ms,created_at")
+      .eq("phase", "finale")
+      .order("score", { ascending: false }).order("duree_ms", { ascending: true, nullsFirst: false }).order("created_at", { ascending: true });
     if (res.error) throw res.error;
     var rows = res.data || [];
     if (rows.length === 0) { $("contenu-classement").innerHTML = '<p class="vide">La finale n\'a pas encore commencé.</p>'; return; }
@@ -1068,7 +1100,7 @@ async function ouvrirClassementFinale() {
     if (rows[0]) html += '<div class="encadre-rang">Grande Sentinelle Auchan Kaolack<span class="gros">🏆 ' + echapper(rows[0].nom) + "</span>" + rows[0].score + "/" + rows[0].total + "</div>";
     html += '<ol class="liste-rang">';
     for (var i = 0; i < rows.length; i++)
-      html += "<li><span class='rang'>" + (i + 1) + "</span><span class='nm'>" + echapper(rows[i].nom) + "</span><span class='sc'>" + rows[i].score + "<small style='color:#b3aa9d;font-size:12px'>/" + rows[i].total + "</small></span></li>";
+      html += "<li><span class='rang'>" + (i + 1) + "</span><span class='nm'>" + echapper(rows[i].nom) + "<small class='tps'>⏱️ " + fmtTemps(rows[i].duree_ms) + "</small></span><span class='sc'>" + rows[i].score + "<small style='color:#b3aa9d;font-size:12px'>/" + rows[i].total + "</small></span></li>";
     html += "</ol>";
     $("contenu-classement").innerHTML = html;
   } catch (e) {
@@ -1116,25 +1148,25 @@ function rendreAdmin(rows) {
   html += "</div>";
 
   if (finale.length) {
-    finale.sort(function (a, b) { return b.score - a.score; });
+    finale.sort(function (a, b) { return (b.score - a.score) || ((a.duree_ms == null ? Infinity : a.duree_ms) - (b.duree_ms == null ? Infinity : b.duree_ms)); });
     html += '<div class="bloc-champions"><h3>🏅 Finale</h3>';
     finale.forEach(function (r, i) { html += '<div class="cl"><span>' + (i + 1) + ". " + echapper(r.nom) + '</span><span>' + r.score + "/" + r.total + "</span></div>"; });
     html += "</div>";
   }
 
-  html += '<table class="admin"><tr><th>Nom</th><th>Dépt</th><th>Score</th><th>Date</th></tr>';
+  html += '<table class="admin"><tr><th>Nom</th><th>Dépt</th><th>Score</th><th>Temps</th><th>Date</th></tr>';
   rows.slice().reverse().forEach(function (r) {
     html += "<tr><td>" + echapper(r.nom) + "</td><td>" + r.departement + (r.sous_rayon ? "<br><small>" + echapper(r.sous_rayon) + "</small>" : "") +
-            "</td><td>" + r.score + "/" + r.total + "</td><td>" + new Date(r.created_at).toLocaleDateString("fr-FR") + "</td></tr>";
+            "</td><td>" + r.score + "/" + r.total + "</td><td>" + fmtTemps(r.duree_ms) + "</td><td>" + new Date(r.created_at).toLocaleDateString("fr-FR") + "</td></tr>";
   });
   html += "</table>";
   $("contenu-admin").innerHTML = html;
 }
 function exporterCSV() {
   if (!donneesAdmin.length) { alert("Aucune donnée à exporter."); return; }
-  var lignes = ["nom;departement;sous_rayon;score;total;phase;date"];
+  var lignes = ["nom;departement;sous_rayon;score;total;temps_s;phase;date"];
   donneesAdmin.forEach(function (r) {
-    lignes.push([r.nom, r.departement, r.sous_rayon || "", r.score, r.total, r.phase, new Date(r.created_at).toLocaleString("fr-FR")].join(";"));
+    lignes.push([r.nom, r.departement, r.sous_rayon || "", r.score, r.total, (r.duree_ms != null ? Math.round(r.duree_ms / 1000) : ""), r.phase, new Date(r.created_at).toLocaleString("fr-FR")].join(";"));
   });
   var blob = new Blob(["﻿" + lignes.join("\n")], { type: "text/csv;charset=utf-8;" });
   var a = document.createElement("a");
@@ -1160,6 +1192,30 @@ function lancerConfettis() {
 }
 
 /* ============================================================
+   COMPTEUR DE PARTICIPATION + PARTAGE
+   ============================================================ */
+async function majCompteurParticipation() {
+  try {
+    var res = await db.from("participations").select("id", { count: "exact", head: true }).eq("phase", "qualif");
+    if (res.error) return;
+    var n = res.count || 0;
+    $("cp-nb").textContent = n;
+    $("cp-remplissage").style.width = Math.min(100, Math.round(n / 53 * 100)) + "%";
+    $("compteur-participation").classList.remove("cachee");
+  } catch (e) {}
+}
+
+function partagerScore() {
+  var lien = "https://quiz-sentinelles-chst.vercel.app";
+  var t = phaseEnCours === "finale"
+    ? "🏆 J'ai joué la GRANDE FINALE du Quiz Sécurité des Sentinelles ! Score : " + score + "/" + questionsPartie.length + " en " + fmtTemps(dureeMs) + "."
+    : "🛡️ Quiz Sécurité « Les Sentinelles » — j'ai fait " + score + "/" + questionsPartie.length +
+      " en " + fmtTemps(dureeMs) + " (" + deptChoisi + (sousRayonChoisi ? " · " + sousRayonChoisi : "") + ") ! À toi de me battre 😏 " + lien;
+  var url = "https://wa.me/?text=" + encodeURIComponent(t);
+  window.open(url, "_blank");
+}
+
+/* ============================================================
    ÉVÉNEMENTS + ROUTAGE
    ============================================================ */
 var cartesDept = document.querySelectorAll(".carte-dept");
@@ -1170,6 +1226,7 @@ $("btn-voir-classement-2").addEventListener("click", function () { $("surtitre-c
 $("btn-retour-accueil").addEventListener("click", function () { montrer(phaseEnCours === "finale" ? "ecran-accueil-finale" : "ecran-accueil"); });
 $("btn-commencer-finale").addEventListener("click", commencerFinale);
 $("btn-finale-classement").addEventListener("click", ouvrirClassementFinale);
+$("btn-partager").addEventListener("click", partagerScore);
 $("btn-export-csv").addEventListener("click", exporterCSV);
 $("btn-rafraichir-admin").addEventListener("click", ouvrirAdmin);
 
@@ -1178,7 +1235,7 @@ $("btn-rafraichir-admin").addEventListener("click", ouvrirAdmin);
   if (params.has("admin")) ouvrirAdmin();
   else if (params.get("mode") === "finale") { phaseEnCours = "finale"; montrer("ecran-accueil-finale"); }
   else if (params.get("mode") === "classement") ouvrirClassement("FRAIS");
-  else montrer("ecran-accueil");
+  else { montrer("ecran-accueil"); majCompteurParticipation(); }
 })();
 </script>
 </body>

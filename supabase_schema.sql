@@ -12,8 +12,12 @@ create table if not exists participations (
   sous_rayon  text,                   -- rempli pour FRAIS (Boulangerie, Boucherie, ...)
   score       int  not null,
   total       int  not null default 13,
+  duree_ms    int,                    -- temps total mis pour répondre (départage à score égal)
   phase       text not null default 'qualif'   -- 'qualif' ou 'finale'
 );
+
+-- Si la table existe déjà, ajouter la colonne de temps (à exécuter une fois) :
+alter table participations add column if not exists duree_ms int;
 
 -- Tentative unique : un même nom ne peut jouer qu'une fois par phase
 create unique index if not exists participations_unique_joueur
