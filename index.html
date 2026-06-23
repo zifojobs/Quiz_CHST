@@ -389,7 +389,7 @@
 
     <button class="btn btn-primaire" id="btn-commencer" disabled>Commencer le quiz ▶</button>
     <button class="btn btn-fantome" id="btn-voir-classement">📊 Voir le classement</button>
-    <p class="note-bas">Une seule participation par personne — donne le meilleur de toi&nbsp;!</p>
+    <p class="note-bas">Tu peux rejouer autant que tu veux — seul ton <b>meilleur essai</b> compte&nbsp;!</p>
   </div>
 
   <!-- ====== ACCUEIL FINALE ====== -->
@@ -446,7 +446,7 @@
     <div id="zone-rang"></div>
     <button class="btn btn-or" id="btn-partager">📲 Partager mon score (WhatsApp)</button>
     <button class="btn btn-primaire" id="btn-voir-classement-2">📊 Voir le classement</button>
-    <p class="note-bas">Ton score est enregistré automatiquement.</p>
+    <p class="note-bas">Ton score est enregistré automatiquement. Tu peux rejouer pour t'améliorer — le meilleur essai compte.</p>
   </div>
 
   <!-- ====== CLASSEMENT ====== -->
@@ -731,6 +731,28 @@ function fmtTemps(ms) {
   var s = Math.round(ms / 1000), m = Math.floor(s / 60); s = s % 60;
   return m > 0 ? (m + " min " + (s < 10 ? "0" + s : s) + " s") : (s + " s");
 }
+// Essais illimités : ne garde que le MEILLEUR essai par personne (score↑, puis temps↓), trié.
+function dureeOuInfini(r) { return r.duree_ms == null ? Infinity : r.duree_ms; }
+function estMeilleur(r, c) {
+  if (!c) return true;
+  if (r.score !== c.score) return r.score > c.score;
+  if (dureeOuInfini(r) !== dureeOuInfini(c)) return dureeOuInfini(r) < dureeOuInfini(c);
+  return new Date(r.created_at) < new Date(c.created_at);
+}
+function meilleurParPersonne(rows) {
+  var best = {};
+  (rows || []).forEach(function (r) {
+    var k = r.nom_normalise || normaliser(r.nom || "");
+    if (estMeilleur(r, best[k])) best[k] = r;
+  });
+  var out = Object.keys(best).map(function (k) { return best[k]; });
+  out.sort(function (a, b) {
+    if (b.score !== a.score) return b.score - a.score;
+    if (dureeOuInfini(a) !== dureeOuInfini(b)) return dureeOuInfini(a) - dureeOuInfini(b);
+    return new Date(a.created_at) - new Date(b.created_at);
+  });
+  return out;
+}
 
 function $(id) { return document.getElementById(id); }
 function montrer(id) {
@@ -820,21 +842,7 @@ async function commencerQualif() {
   $("btn-commencer").disabled = true;
   $("btn-commencer").textContent = "Vérification…";
 
-  // Tentative unique : déjà joué les qualifs ?
-  try {
-    var res = await db.from("participations").select("id")
-      .eq("nom_normalise", normaliser(saisie)).eq("phase", "qualif").limit(1);
-    if (res.error) throw res.error;
-    if (res.data && res.data.length > 0) {
-      messageAccueil('<strong>Tu as déjà joué !</strong> Une seule participation par personne. Tu peux consulter le classement ci-dessous. 😉', true);
-      $("btn-commencer").disabled = false;
-      $("btn-commencer").textContent = "Commencer le quiz ▶";
-      return;
-    }
-  } catch (e) {
-    // Pas de connexion : on laisse jouer quand même, le contrôle final reste.
-  }
-
+  // Essais illimités : on peut rejouer pour améliorer son meilleur score.
   phaseEnCours = "qualif";
   totalQuestions = 13;
   questionsPartie = construireQuestionsQualif();
@@ -871,15 +879,7 @@ async function commencerFinale() {
       $("btn-commencer-finale").textContent = "Vérifier et commencer ▶";
       return;
     }
-    // Déjà joué la finale ?
-    var dejaRes = await db.from("participations").select("id").eq("nom_normalise", n).eq("phase", "finale").limit(1);
-    if (dejaRes.data && dejaRes.data.length > 0) {
-      messageFinale("Tu as déjà joué la finale ! Consulte le classement de la finale ci-dessous.", true);
-      $("btn-commencer-finale").disabled = false;
-      $("btn-commencer-finale").textContent = "Vérifier et commencer ▶";
-      return;
-    }
-
+    // Essais illimités en finale aussi : le meilleur essai compte.
     nomJoueur = nomExact;
     prenomJoueur = nomExact.split(" ")[0];
     deptChoisi = "FINALE";
@@ -1033,10 +1033,11 @@ async function afficherRang() {
       .eq("phase", "qualif").eq("departement", deptChoisi)
       .order("score", { ascending: false }).order("duree_ms", { ascending: true, nullsFirst: false }).order("created_at", { ascending: true });
     if (res.error || !res.data) return;
+    var liste = meilleurParPersonne(res.data);
     var moi = normaliser(nomJoueur), rang = 0;
-    for (var i = 0; i < res.data.length; i++) if (res.data[i].nom_normalise === moi) { rang = i + 1; break; }
+    for (var i = 0; i < liste.length; i++) if (liste[i].nom_normalise === moi) { rang = i + 1; break; }
     if (rang > 0)
-      $("zone-rang").innerHTML = '<div class="encadre-rang">Tu es <span class="gros">' + rang + (rang === 1 ? "ᵉʳ" : "ᵉ") + '</span> sur ' + res.data.length + " dans ton département " + (rang === 1 ? "— tu mènes la course ! 🏆" : "pour l'instant.") + "</div>";
+      $("zone-rang").innerHTML = '<div class="encadre-rang">Tu es <span class="gros">' + rang + (rang === 1 ? "ᵉʳ" : "ᵉ") + '</span> sur ' + liste.length + " dans ton département " + (rang === 1 ? "— tu mènes la course ! 🏆" : "pour l'instant.") + "</div>";
   } catch (e) {}
 }
 
@@ -1059,11 +1060,10 @@ function ouvrirClassement(depart) {
 async function chargerClassement(dept) {
   $("contenu-classement").innerHTML = '<p class="chargement">Chargement…</p>';
   try {
-    var res = await db.from("participations").select("nom,sous_rayon,score,total,duree_ms,created_at")
-      .eq("phase", "qualif").eq("departement", dept)
-      .order("score", { ascending: false }).order("duree_ms", { ascending: true, nullsFirst: false }).order("created_at", { ascending: true });
+    var res = await db.from("participations").select("nom,nom_normalise,sous_rayon,score,total,duree_ms,created_at")
+      .eq("phase", "qualif").eq("departement", dept);
     if (res.error) throw res.error;
-    rendreClassement(res.data || []);
+    rendreClassement(meilleurParPersonne(res.data));
   } catch (e) {
     $("contenu-classement").innerHTML = '<p class="vide">Impossible de charger le classement.<br>Vérifie ta connexion.</p>';
   }
@@ -1105,11 +1105,10 @@ async function ouvrirClassementFinale() {
   $("onglets-classement").innerHTML = "";
   $("contenu-classement").innerHTML = '<p class="chargement">Chargement…</p>';
   try {
-    var res = await db.from("participations").select("nom,score,total,duree_ms,created_at")
-      .eq("phase", "finale")
-      .order("score", { ascending: false }).order("duree_ms", { ascending: true, nullsFirst: false }).order("created_at", { ascending: true });
+    var res = await db.from("participations").select("nom,nom_normalise,score,total,duree_ms,created_at")
+      .eq("phase", "finale");
     if (res.error) throw res.error;
-    var rows = res.data || [];
+    var rows = meilleurParPersonne(res.data);
     if (rows.length === 0) { $("contenu-classement").innerHTML = '<p class="vide">La finale n\'a pas encore commencé.</p>'; return; }
     var html = "";
     if (rows[0]) html += '<div class="encadre-rang">Grande Sentinelle Auchan Kaolack<span class="gros">🏆 ' + echapper(rows[0].nom) + "</span>" + rows[0].score + "/" + rows[0].total + "</div>";
@@ -1249,9 +1248,11 @@ function verrouillerSiTermine() {
    ============================================================ */
 async function majCompteurParticipation() {
   try {
-    var res = await db.from("participations").select("id", { count: "exact", head: true }).eq("phase", "qualif");
+    var res = await db.from("participations").select("nom_normalise").eq("phase", "qualif");
     if (res.error) return;
-    var n = res.count || 0;
+    var noms = {};
+    (res.data || []).forEach(function (r) { noms[r.nom_normalise] = 1; });
+    var n = Object.keys(noms).length;
     $("cp-nb").textContent = n;
     $("cp-remplissage").style.width = Math.min(100, Math.round(n / 53 * 100)) + "%";
     $("compteur-participation").classList.remove("cachee");

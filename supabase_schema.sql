@@ -19,9 +19,10 @@ create table if not exists participations (
 -- Si la table existe déjà, ajouter la colonne de temps (à exécuter une fois) :
 alter table participations add column if not exists duree_ms int;
 
--- Tentative unique : un même nom ne peut jouer qu'une fois par phase
-create unique index if not exists participations_unique_joueur
-  on participations (nom_normalise, phase);
+-- Essais ILLIMITÉS : on autorise plusieurs participations par personne/phase
+-- (le classement ne garde que le meilleur essai de chacun). On retire donc
+-- l'ancien index unique s'il existe :
+drop index if exists participations_unique_joueur;
 
 -- Sécurité au niveau des lignes : lecture + insertion publiques,
 -- mais PAS de modification ni de suppression via l'app (on nettoie depuis le dashboard).
