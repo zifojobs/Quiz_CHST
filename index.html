@@ -134,6 +134,8 @@
     color: var(--encre); transition: border-color .15s, box-shadow .15s; margin-bottom: 22px;
   }
   .champ-nom::placeholder { color: #b3aa9d; }
+  .note-nom { font-size: 12.5px; line-height: 1.45; color: var(--gris); margin: -14px 2px 22px; }
+  .note-nom b { color: var(--encre); }
   .champ-nom:focus { outline: none; border-color: var(--rouge); box-shadow: 0 0 0 3px rgba(196,30,58,0.12); }
 
   .grille-depts { display: grid; gap: 11px; margin-bottom: 8px; }
@@ -205,6 +207,17 @@
   .question {
     font-family: "Marcellus", serif; font-size: 22px; line-height: 1.35; margin-bottom: 22px; letter-spacing: .2px;
   }
+  .chrono { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .chrono-num {
+    font-weight: 800; font-size: 15px; color: var(--encre);
+    min-width: 34px; text-align: center; font-variant-numeric: tabular-nums;
+  }
+  .chrono-barre { flex: 1; height: 7px; background: var(--ligne); border-radius: 4px; overflow: hidden; }
+  .chrono-barre b { display: block; height: 100%; width: 100%; background: var(--vert); border-radius: 4px; }
+  .chrono-urgent .chrono-num { color: var(--rouge); }
+  .chrono-urgent .chrono-barre b { background: var(--rouge); animation: pulse-chrono .55s infinite alternate; }
+  @keyframes pulse-chrono { from { opacity: 1; } to { opacity: .45; } }
+
   .options { display: flex; flex-direction: column; gap: 11px; }
   .option {
     display: flex; align-items: flex-start; gap: 13px; width: 100%; text-align: left;
@@ -361,8 +374,9 @@
       <div class="cp-barre"><i id="cp-remplissage"></i></div>
     </div>
 
-    <label class="titre-champ" for="champ-nom">Ton nom</label>
-    <input id="champ-nom" class="champ-nom" type="text" maxlength="40" placeholder="Prénom et nom" autocomplete="name">
+    <label class="titre-champ" for="champ-nom">Ton prénom ET ton nom</label>
+    <input id="champ-nom" class="champ-nom" type="text" maxlength="40" placeholder="Ex. Diouly Dione" autocomplete="name">
+    <p class="note-nom">⚠️ Écris ton <b>prénom + nom en entier</b>, et toujours <b>de la même façon</b> si tu rejoues — sinon tu apparaîtras en double au classement.</p>
 
     <label class="titre-champ">Ton département</label>
     <div class="grille-depts">
@@ -415,6 +429,10 @@
       <span class="compteur" id="compteur-question"></span>
     </div>
     <div class="progression"><i id="barre-remplissage"></i></div>
+    <div class="chrono" id="chrono">
+      <span class="chrono-num" id="chrono-num">20</span>
+      <i class="chrono-barre"><b id="chrono-jauge"></b></i>
+    </div>
     <p class="question" id="texte-question"></p>
     <div class="options" id="zone-options"></div>
     <div id="zone-feedback"></div>
@@ -726,6 +744,7 @@ var nomJoueur = "", prenomJoueur = "Sentinelle", deptChoisi = "", sousRayonChois
 var phaseEnCours = "qualif";   // 'qualif' ou 'finale'
 var questionsPartie = [], indexCourant = 0, score = 0, reponseDonnee = false, totalQuestions = 13;
 var tempsDebut = 0, dureeMs = 0;
+var DUREE_QUESTION = 20, chronoInterval = null;
 function fmtTemps(ms) {
   if (ms == null || isNaN(ms)) return "—";
   var s = Math.round(ms / 1000), m = Math.floor(s / 60); s = s % 60;
@@ -769,6 +788,17 @@ function melanger(t) {
   var c = t.slice();
   for (var i = c.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = c[i]; c[i] = c[j]; c[j] = x; }
   return c;
+}
+/* Mélange les options d'UNE question et recalcule l'indice de la bonne réponse.
+   Sans ça, la bonne réponse reste collée à sa position d'origine (souvent A). */
+function melangerOptions(q) {
+  var paires = q.options.map(function (texte, i) { return { texte: texte, estBonne: i === q.bonne }; });
+  paires = melanger(paires);
+  var copie = {};
+  for (var k in q) if (q.hasOwnProperty(k)) copie[k] = q[k];
+  copie.options = paires.map(function (p) { return p.texte; });
+  copie.bonne = paires.findIndex(function (p) { return p.estBonne; });
+  return copie;
 }
 function echapper(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -827,13 +857,14 @@ function construireQuestionsQualif() {
   var metierFmt = metier.map(function (q) {
     return { theme: deptChoisi, question: q.question, options: q.options, bonne: q.bonne, explication: q.explication };
   });
-  return melanger(metierFmt.concat(QUESTIONS_COMMUNES));
+  return melanger(metierFmt.concat(QUESTIONS_COMMUNES)).map(melangerOptions);
 }
 
 async function commencerQualif() {
   if (quizTermine("qualif")) { messageAccueil("<strong>Les qualifications sont terminées.</strong> Tu peux consulter le classement ci-dessous. Merci !", true); verrouillerSiTermine(); return; }
-  var saisie = $("champ-nom").value.trim();
+  var saisie = $("champ-nom").value.trim().replace(/\s+/g, " ");
   if (!saisie) { messageAccueil("Merci d'indiquer ton nom pour participer au tournoi."); return; }
+  if (saisie.split(" ").length < 2) { messageAccueil("Indique ton <strong>prénom ET ton nom</strong> (ex. Diouly Dione) — et écris-le toujours pareil si tu rejoues."); return; }
   if (!deptChoisi || (deptChoisi === "FRAIS" && !sousRayonChoisi)) { messageAccueil("Choisis ton département (et ton rayon)."); return; }
 
   nomJoueur = saisie;
@@ -886,7 +917,7 @@ async function commencerFinale() {
     sousRayonChoisi = "";
     phaseEnCours = "finale";
     totalQuestions = 10;
-    questionsPartie = melanger(QUESTIONS_FINALE);
+    questionsPartie = melanger(QUESTIONS_FINALE).map(melangerOptions);
     lancerPartie();
   } catch (e) {
     messageFinale("Connexion impossible. Réessaie dans un instant.", true);
@@ -938,12 +969,35 @@ function afficherQuestion() {
   $("zone-options").innerHTML = html;
   var opts = $("zone-options").querySelectorAll(".option");
   for (var k = 0; k < opts.length; k++) opts[k].addEventListener("click", gererReponse);
+  demarrerChrono();
+}
+function demarrerChrono() {
+  arreterChrono();
+  var reste = DUREE_QUESTION;
+  var box = $("chrono"), num = $("chrono-num"), jauge = $("chrono-jauge");
+  box.classList.remove("chrono-urgent");
+  num.textContent = reste;
+  jauge.style.width = "100%";
+  chronoInterval = setInterval(function () {
+    reste--;
+    num.textContent = reste < 0 ? 0 : reste;
+    jauge.style.width = (Math.max(reste, 0) / DUREE_QUESTION * 100) + "%";
+    if (reste <= 5) box.classList.add("chrono-urgent");
+    if (reste <= 0) { arreterChrono(); traiterReponse(-1); }
+  }, 1000);
+}
+function arreterChrono() {
+  if (chronoInterval) { clearInterval(chronoInterval); chronoInterval = null; }
 }
 function gererReponse(ev) {
+  traiterReponse(parseInt(ev.currentTarget.getAttribute("data-index"), 10));
+}
+function traiterReponse(choix) {
   if (reponseDonnee) return;
   reponseDonnee = true;
+  arreterChrono();
   var q = questionsPartie[indexCourant];
-  var choix = parseInt(ev.currentTarget.getAttribute("data-index"), 10);
+  var tempsEcoule = (choix === -1);
   var bon = (choix === q.bonne);
   if (bon) score++;
   var opts = $("zone-options").querySelectorAll(".option");
@@ -954,7 +1008,10 @@ function gererReponse(ev) {
   }
   var fb = document.createElement("div");
   fb.className = "feedback " + (bon ? "bon" : "mauvais");
-  fb.innerHTML = "<strong>" + (bon ? "✓ Bonne réponse, " + echapper(prenomJoueur) + " !" : "✗ Pas tout à fait, " + echapper(prenomJoueur) + "…") + "</strong>" + echapper(q.explication);
+  var entete = tempsEcoule
+    ? "⏱ Temps écoulé, " + echapper(prenomJoueur) + " ! Voici la bonne réponse :"
+    : (bon ? "✓ Bonne réponse, " + echapper(prenomJoueur) + " !" : "✗ Pas tout à fait, " + echapper(prenomJoueur) + "…");
+  fb.innerHTML = "<strong>" + entete + "</strong>" + echapper(q.explication);
   var suiv = document.createElement("button");
   suiv.className = "btn btn-or";
   suiv.style.marginTop = "16px";
