@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tableau de bord — Tournoi des Sentinelles · Auchan Kaolack</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --rouge: #C41E3A;
+    --rouge-fonce: #97152b;
+    --or: #F4C430;
+    --or-fonce: #b9890d;
+    --creme: #FBF7EF;
+    --papier: #FFFDF8;
+    --encre: #2A1A12;
+    --encre-doux: #6f5d50;
+    --ligne: rgba(42,26,18,.09);
+    --ombre: 0 30px 60px -34px rgba(60,30,15,.35);
+    --ombre-douce: 0 18px 40px -28px rgba(60,30,15,.3);
+    --bezier: cubic-bezier(.22,1,.36,1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(244,196,48,.16), transparent 60%),
+      radial-gradient(1000px 700px at 100% 0%, rgba(196,30,58,.10), transparent 55%),
+      var(--creme);
+    color: var(--encre);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+  /* grain fixe */
+  body::after {
+    content: ""; position: fixed; inset: 0; z-index: 60; pointer-events: none; opacity: .035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 40px 22px 90px; }
+
+  /* ---------- En-tête ---------- */
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 30px; }
+  .marque { display: flex; align-items: center; gap: 13px; }
+  .emblem {
+    width: 48px; height: 48px; border-radius: 15px; flex: none;
+    background: linear-gradient(150deg, var(--rouge), var(--rouge-fonce));
+    display: grid; place-items: center; font-size: 24px; color: #fff;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,.35), 0 12px 24px -12px rgba(196,30,58,.7);
+  }
+  .marque .nom { font-family: "Marcellus", serif; font-size: 19px; line-height: 1.05; }
+  .marque .sous { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--encre-doux); }
+  .live-pill {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 999px;
+    background: var(--papier); border: 1px solid var(--ligne); font-size: 12px; font-weight: 600; color: var(--encre-doux);
+    box-shadow: var(--ombre-douce);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #19b562; box-shadow: 0 0 0 0 rgba(25,181,98,.5); animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(25,181,98,.45);} 70%{box-shadow:0 0 0 7px rgba(25,181,98,0);} 100%{box-shadow:0 0 0 0 rgba(25,181,98,0);} }
+
+  .eyebrow {
+    display: inline-block; padding: 6px 13px; border-radius: 999px; background: rgba(196,30,58,.08);
+    color: var(--rouge-fonce); font-size: 10.5px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  h1.titre { font-family: "Marcellus", serif; font-weight: 400; font-size: clamp(30px, 5.2vw, 56px); line-height: 1.02; letter-spacing: -.01em; }
+  h1.titre .acc { color: var(--rouge); }
+  .intro { color: var(--encre-doux); font-size: clamp(14px,1.7vw,16px); max-width: 560px; margin-top: 14px; }
+
+  /* ---------- Double-bezel ---------- */
+  .shell { background: rgba(42,26,18,.04); border: 1px solid var(--ligne); border-radius: 30px; padding: 9px; }
+  .core { background: var(--papier); border-radius: 22px; box-shadow: inset 0 1px 1px rgba(255,255,255,.7), var(--ombre-douce); }
+
+  /* ---------- Compte à rebours géant ---------- */
+  .hero { margin-top: 34px; }
+  .hero .core { padding: clamp(26px,4vw,46px); position: relative; overflow: hidden; }
+  .hero .core::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(640px 300px at 88% -30%, rgba(244,196,48,.22), transparent 60%);
+  }
+  .cr-label { font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--encre-doux); font-weight: 600; }
+  .cr-titre { font-family: "Marcellus", serif; font-size: clamp(19px,2.6vw,27px); margin: 6px 0 22px; }
+  .cr-titre b { color: var(--rouge); }
+  .cr-grid { display: flex; gap: clamp(10px,2.4vw,30px); flex-wrap: wrap; align-items: flex-end; }
+  .cr-b { text-align: center; min-width: 64px; flex: 1 1 64px; }
+  .cr-n {
+    font-family: "Marcellus", serif; display: block;
+    font-size: clamp(54px, 13vw, 132px); line-height: .92; color: var(--encre);
+    font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+  }
+  .cr-b.j .cr-n { color: var(--rouge); }
+  .cr-k { display: block; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--encre-doux); margin-top: 8px; }
+  .cr-sep { font-family: "Marcellus", serif; font-size: clamp(40px,9vw,96px); color: var(--or-fonce); opacity: .55; align-self: center; line-height: .9; }
+  .cr-foot { margin-top: 24px; display: flex; gap: 10px 22px; flex-wrap: wrap; align-items: center; border-top: 1px dashed var(--ligne); padding-top: 18px; font-size: 13px; color: var(--encre-doux); }
+  .cr-foot .finale { color: var(--rouge-fonce); font-weight: 600; }
+  .cr-fini { font-family: "Marcellus", serif; font-size: clamp(20px,3vw,30px); color: var(--rouge); }
+
+  /* barre de progression du temps écoulé */
+  .timeline { margin-top: 20px; }
+  .timeline .rail { height: 9px; border-radius: 999px; background: rgba(42,26,18,.08); overflow: hidden; }
+  .timeline .fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--rouge), var(--or)); transition: width 1s var(--bezier); }
+  .timeline .lg { display: flex; justify-content: space-between; font-size: 11px; color: var(--encre-doux); margin-top: 7px; letter-spacing: .04em; }
+
+  /* ---------- Bento ---------- */
+  .bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; margin-top: 18px; }
+  .card { grid-column: span 4; }
+  .card .core { padding: 22px 22px 20px; height: 100%; display: flex; flex-direction: column; }
+  .card .core { box-shadow: inset 0 1px 1px rgba(255,255,255,.7), var(--ombre-douce); }
+  .col6 { grid-column: span 6; }
+  .col8 { grid-column: span 8; }
+  .col12 { grid-column: span 12; }
+
+  .k-haut { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+  .k-titre { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--encre-doux); font-weight: 700; }
+  .k-ico { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; font-size: 17px; background: rgba(244,196,48,.16); }
+
+  .big-num { font-family: "Marcellus", serif; font-size: clamp(40px,6vw,58px); line-height: 1; color: var(--rouge); font-variant-numeric: tabular-nums; }
+  .big-sub { font-size: 13px; color: var(--encre-doux); margin-top: 8px; }
+  .big-sub b { color: var(--encre); }
+
+  /* anneau participation */
+  .ring-wrap { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .ring { --p: 0; width: 124px; height: 124px; border-radius: 50%; flex: none; display: grid; place-items: center;
+    background: conic-gradient(var(--rouge) calc(var(--p)*1%), rgba(42,26,18,.08) 0); transition: background 1s var(--bezier); }
+  .ring .hole { width: 96px; height: 96px; border-radius: 50%; background: var(--papier); display: grid; place-items: center; box-shadow: inset 0 1px 2px rgba(0,0,0,.05); }
+  .ring .pct { font-family: "Marcellus", serif; font-size: 27px; color: var(--encre); line-height: 1; }
+  .ring .pct small { display: block; font-family: "Plus Jakarta Sans"; font-size: 10px; letter-spacing: .12em; color: var(--encre-doux); text-transform: uppercase; margin-top: 3px; }
+
+  /* barres département */
+  .dept-row { display: flex; align-items: center; gap: 12px; margin: 11px 0; }
+  .dept-row .lab { width: 64px; font-size: 12.5px; font-weight: 700; letter-spacing: .04em; }
+  .dept-row .rail { flex: 1; height: 12px; border-radius: 999px; background: rgba(42,26,18,.07); overflow: hidden; }
+  .dept-row .rail b { display: block; height: 100%; border-radius: 999px; width: 0; transition: width 1.1s var(--bezier); }
+  .dept-row .val { width: 30px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 13.5px; }
+  .c-frais { background: linear-gradient(90deg,#1f9e6b,#3ec98c); }
+  .c-caisse { background: linear-gradient(90deg,var(--rouge),#e0556e); }
+  .c-pgc { background: linear-gradient(90deg,var(--or-fonce),var(--or)); }
+
+  /* champions */
+  .champ { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 0; border-bottom: 1px dashed var(--ligne); }
+  .champ:last-child { border-bottom: none; }
+  .champ .who { display: flex; align-items: center; gap: 11px; min-width: 0; }
+  .champ .medal { font-size: 21px; flex: none; }
+  .champ .nm { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .champ .dp { font-size: 11px; color: var(--encre-doux); letter-spacing: .08em; text-transform: uppercase; }
+  .champ .sc { font-family: "Marcellus", serif; font-size: 19px; color: var(--rouge); white-space: nowrap; }
+  .champ .sc small { color: var(--encre-doux); font-size: 12px; }
+
+  /* médailles */
+  .med-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+  .med { text-align: center; padding: 14px 6px; border-radius: 16px; background: rgba(42,26,18,.035); border: 1px solid var(--ligne); }
+  .med .e { font-size: 22px; }
+  .med .n { font-family: "Marcellus", serif; font-size: 26px; line-height: 1; margin-top: 4px; }
+  .med .t { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--encre-doux); margin-top: 5px; }
+
+  /* mini-stats inline */
+  .mini-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+  .mini { padding: 12px 14px; border-radius: 16px; background: rgba(42,26,18,.035); border: 1px solid var(--ligne); }
+  .mini .v { font-family: "Marcellus", serif; font-size: 25px; color: var(--encre); line-height: 1; }
+  .mini .v.r { color: var(--rouge); }
+  .mini .l { font-size: 11px; color: var(--encre-doux); margin-top: 5px; letter-spacing: .03em; }
+
+  /* sous-rayons */
+  .sray { display: flex; align-items: center; gap: 10px; margin: 9px 0; font-size: 13px; }
+  .sray .lab { width: 110px; color: var(--encre); }
+  .sray .rail { flex: 1; height: 9px; border-radius: 999px; background: rgba(42,26,18,.07); overflow: hidden; }
+  .sray .rail b { display: block; height: 100%; background: linear-gradient(90deg,#1f9e6b,#7bd6a9); width: 0; transition: width 1s var(--bezier); }
+  .sray .val { width: 22px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* classement table */
+  table.cl { width: 100%; border-collapse: collapse; }
+  table.cl th { text-align: left; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--encre-doux); padding: 0 10px 12px; font-weight: 700; }
+  table.cl th.num, table.cl td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.cl td { padding: 11px 10px; border-top: 1px solid var(--ligne); font-size: 14px; }
+  table.cl tr td:first-child { font-family: "Marcellus", serif; color: var(--or-fonce); width: 38px; }
+  table.cl tr.top1 td:first-child { color: var(--rouge); }
+  table.cl .nm { font-weight: 600; }
+  table.cl .badge-dp { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--encre-doux); }
+  table.cl .sc { font-family: "Marcellus", serif; color: var(--rouge); font-size: 16px; }
+
+  .vide { text-align: center; color: var(--encre-doux); padding: 26px 0; font-size: 14px; }
+  .chargement { text-align: center; color: var(--encre-doux); padding: 18px 0; }
+
+  /* pied */
+  footer { margin-top: 46px; text-align: center; color: var(--encre-doux); font-size: 12.5px; }
+  footer .slogan { font-family: "Marcellus", serif; font-size: 17px; color: var(--rouge); margin-bottom: 6px; }
+  footer .maj { margin-top: 8px; font-size: 11px; letter-spacing: .04em; }
+
+  .badge-fige { background: rgba(196,30,58,.1); color: var(--rouge-fonce); }
+
+  /* rappel pédagogique */
+  .rappel { margin-top: 16px; display: flex; align-items: center; gap: 16px; }
+  .rappel .core { padding: 18px 22px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .rappel .ico { width: 44px; height: 44px; border-radius: 14px; flex: none; display: grid; place-items: center; font-size: 22px;
+    background: linear-gradient(150deg, rgba(244,196,48,.28), rgba(244,196,48,.12)); }
+  .rappel .txt { flex: 1; min-width: 240px; font-size: 14px; color: var(--encre); }
+  .rappel .txt b { color: var(--rouge-fonce); }
+  .rappel .txt .pt { display: block; font-size: 12px; color: var(--encre-doux); margin-top: 3px; }
+
+  /* reveal */
+  .reveal { opacity: 0; transform: translateY(26px); filter: blur(6px); transition: opacity .8s var(--bezier), transform .8s var(--bezier), filter .8s var(--bezier); }
+  .reveal.vu { opacity: 1; transform: none; filter: none; }
+
+  @media (max-width: 860px) {
+    .card, .col6, .col8 { grid-column: span 12; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1 !important; transform: none !important; filter: none !important; }
+    .dot { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="marque">
+      <div class="emblem">🛡️</div>
+      <div>
+        <div class="nom">Les Sentinelles de la Sécurité</div>
+        <div class="sous">CHST · Auchan Kaolack</div>
+      </div>
+    </div>
+    <div class="live-pill" id="live-pill"><span class="dot"></span> <span id="live-txt">Données en direct</span></div>
+  </div>
+
+  <header class="reveal">
+    <span class="eyebrow">Tournoi en cours · Phase de qualifications</span>
+    <h1 class="titre">Tableau de bord du <span class="acc">Tournoi des Sentinelles</span></h1>
+    <p class="intro">Suivi en temps réel de la participation, des scores et du classement vers le titre de <b>Grande Sentinelle Auchan Kaolack</b>.</p>
+  </header>
+
+  <!-- COMPTE À REBOURS GÉANT -->
+  <section class="hero shell reveal">
+    <div class="core">
+      <div class="cr-label">⏳ Clôture des qualifications</div>
+      <div class="cr-titre" id="cr-titre">Il reste du temps pour décrocher sa place en <b>finale</b></div>
+      <div class="cr-grid" id="cr-grid"><span class="chargement">…</span></div>
+      <div class="timeline">
+        <div class="rail"><div class="fill" id="tl-fill"></div></div>
+        <div class="lg"><span id="tl-debut">Lancement</span><span id="tl-fin">Dim. 6 juillet · 23h59</span></div>
+      </div>
+      <div class="cr-foot">
+        <span>🏁 Qualifications jusqu'au <b>dimanche 6 juillet</b></span>
+        <span class="finale">🏅 Finale des 3 champions : dimanche 13 juillet</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- RAPPEL PÉDAGOGIQUE -->
+  <section class="rappel shell reveal">
+    <div class="core">
+      <div class="ico">🧠</div>
+      <div class="txt">
+        <b>L'important, c'est de bien savoir — pas d'aller vite.</b> Le chrono ne sert qu'à départager deux Sentinelles <b>à score égal</b>.
+        Mieux vaut un sans-faute réfléchi qu'une réponse rapide et fausse.
+        <span class="pt">Tu peux rejouer autant de fois que tu veux : on garde ton <b>meilleur essai</b>. Profites-en pour bien mémoriser les bons réflexes.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- BENTO -->
+  <div class="bento">
+
+    <!-- Participation (anneau) -->
+    <section class="card col6 reveal">
+      <div class="core">
+        <div class="k-haut"><span class="k-titre">Participation</span><span class="k-ico">👥</span></div>
+        <div class="ring-wrap">
+          <div class="ring" id="ring"><div class="hole"><div class="pct" id="ring-pct">—<small>de l'effectif</small></div></div></div>
+          <div>
+            <div class="big-num" id="p-uniques">—</div>
+            <div class="big-sub"><b id="p-eff">53</b> collaborateurs · objectif <b>53/53</b></div>
+            <div class="big-sub" style="margin-top:6px">🎮 <b id="p-parties">—</b> parties jouées au total</div>
+            <div class="big-sub" style="margin-top:4px" id="p-rejoue">—</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Médailles -->
+    <section class="card col6 reveal">
+      <div class="core">
+        <div class="k-haut"><span class="k-titre">Niveaux atteints (meilleur essai)</span><span class="k-ico">🏆</span></div>
+        <div class="med-grid" id="med-grid"><span class="chargement">…</span></div>
+        <div class="big-sub" style="margin-top:12px">Barème /13 — 🏆 Or ≥ 11 · 🥈 Argent ≥ 8 · 🥉 Bronze ≥ 5 · 💪 Apprenti &lt; 5</div>
+      </div>
+    </section>
+
+    <!-- Départements -->
+    <section class="card col6 reveal">
+      <div class="core">
+        <div class="k-haut"><span class="k-titre">Participation par département</span><span class="k-ico">🏬</span></div>
+        <div id="dept-zone"><span class="chargement">…</span></div>
+        <div class="big-sub" style="margin-top:10px">Joueurs uniques par département</div>
+      </div>
+    </section>
+
+    <!-- Champions -->
+    <section class="card col6 reveal">
+      <div class="core">
+        <div class="k-haut"><span class="k-titre">Champions provisoires</span><span class="k-ico">⭐</span></div>
+        <div id="champ-zone"><span class="chargement">…</span></div>
+        <div class="big-sub" style="margin-top:10px">Meilleur score par département (départage au temps)</div>
+      </div>
+    </section>
+
+    <!-- Mini-stats scores -->
+    <section class="card col6 reveal">
+      <div class="core">
+        <div class="k-haut"><span class="k-titre">Performances</span><span class="k-ico">📈</span></div>
+        <div class="mini-grid">
+          <div class="mini"><div class="v r" id="s-moy">—</div><div class="l">Score moyen /13</div></div>
+          <div class="mini"><div class="v" id="s-parfait">—</div><div class="l">Sans-faute (13/13)</div></div>
+          <div class="mini"><div class="v" id="s-tmoy">—</div><div class="l">Temps moyen</div></div>
+          <div class="mini"><div class="v" id="s-tmin">—</div><div class="l">Meilleur temps</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sous-rayons FRAIS -->
+    <section class="card col6 reveal">
+      <div class="core">
+        <div class="k-haut"><span class="k-titre">Détail rayons FRAIS</span><span class="k-ico">🥖</span></div>
+        <div id="sray-zone"><span class="chargement">…</span></div>
+      </div>
+    </section>
+
+    <!-- Classement -->
+    <section class="card col12 reveal">
+      <div class="core">
+        <div class="k-haut"><span class="k-titre">Classement général · meilleur essai de chacun</span><span class="k-ico">🥇</span></div>
+        <div id="cl-zone"><span class="chargement">…</span></div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="reveal">
+    <div class="slogan">Bien au travail, Mieux dans la vie</div>
+    <div>Tournoi des Sentinelles de la Sécurité · <b>Auchan Kaolack</b></div>
+    <div class="maj" id="maj">—</div>
+  </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =========================================================
+   CONFIG
+   ========================================================= */
+var SUPABASE_URL = "https://uavbrfskwncgtassretr.supabase.co";
+var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhdmJyZnNrd25jZ3Rhc3NyZXRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDI2ODksImV4cCI6MjA5NzI3ODY4OX0.-MzzVQiWHLkryuXRiRSabW00oHpk9_tjribCzr-MPWA";
+var EFFECTIF_TOTAL = 53;
+var DATE_LIMITE = new Date("2026-07-06T23:59:59Z");        // qualifs
+var DATE_LIMITE_FINALE = new Date("2026-07-13T23:59:59Z"); // finale
+var DATE_DEBUT = new Date("2026-06-24T15:00:00Z");         // remise à zéro / relance (base de la timeline)
+
+// DONNEES_FIGEES : si non null, on n'interroge pas Supabase (mode photo figée).
+var DONNEES_FIGEES = null;
+
+var db = (typeof supabase !== "undefined") ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+function $(id){ return document.getElementById(id); }
+
+/* =========================================================
+   OUTILS (mêmes règles que le quiz)
+   ========================================================= */
+function normaliser(s){ return (s||"").toLowerCase().trim().replace(/\s+/g," ").normalize("NFD").replace(/[̀-ͯ]/g,""); }
+function dureeOuInfini(r){ return r.duree_ms == null ? Infinity : r.duree_ms; }
+function estMeilleur(r,c){
+  if(!c) return true;
+  if(r.score !== c.score) return r.score > c.score;
+  if(dureeOuInfini(r) !== dureeOuInfini(c)) return dureeOuInfini(r) < dureeOuInfini(c);
+  return new Date(r.created_at) < new Date(c.created_at);
+}
+function meilleurParPersonne(rows){
+  var best = {};
+  (rows||[]).forEach(function(r){ var k = r.nom_normalise || normaliser(r.nom); if(estMeilleur(r,best[k])) best[k]=r; });
+  var out = Object.keys(best).map(function(k){ return best[k]; });
+  out.sort(function(a,b){
+    if(b.score!==a.score) return b.score-a.score;
+    if(dureeOuInfini(a)!==dureeOuInfini(b)) return dureeOuInfini(a)-dureeOuInfini(b);
+    return new Date(a.created_at)-new Date(b.created_at);
+  });
+  return out;
+}
+function fmtTemps(ms){
+  if(ms==null||isNaN(ms)) return "—";
+  var s=Math.round(ms/1000), m=Math.floor(s/60); s=s%60;
+  return m>0 ? (m+"′"+(s<10?"0"+s:s)+"″") : (s+" s");
+}
+function echapper(s){ var d=document.createElement("div"); d.textContent=s||""; return d.innerHTML; }
+function pad(n){ return n<10 ? "0"+n : ""+n; }
+
+/* =========================================================
+   COMPTE À REBOURS
+   ========================================================= */
+function majCompteRebours(){
+  var reste = DATE_LIMITE.getTime() - Date.now();
+  var grid = $("cr-grid"), titre = $("cr-titre");
+  if(reste <= 0){
+    var fini = Date.now() > DATE_LIMITE_FINALE.getTime();
+    grid.innerHTML = '<div class="cr-fini">'+(fini
+      ? "⛔ Le tournoi est terminé — merci à toutes les Sentinelles !"
+      : "✅ Qualifications terminées — place à la <b>finale des 3 champions</b> (dim. 13 juillet).")+'</div>';
+    titre.textContent = "Le classement reste consultable ci-dessous.";
+    $("tl-fill").style.width = "100%";
+    return;
+  }
+  var j = Math.floor(reste/86400000);
+  var h = Math.floor((reste%86400000)/3600000);
+  var m = Math.floor((reste%3600000)/60000);
+  var s = Math.floor((reste%60000)/1000);
+  function bloc(n,k,cls){ return '<div class="cr-b '+(cls||"")+'"><span class="cr-n">'+n+'</span><span class="cr-k">'+k+'</span></div>'; }
+  grid.innerHTML =
+    bloc(j,"jours","j") + '<span class="cr-sep">:</span>' +
+    bloc(pad(h),"heures") + '<span class="cr-sep">:</span>' +
+    bloc(pad(m),"minutes") + '<span class="cr-sep">:</span>' +
+    bloc(pad(s),"secondes");
+  // timeline : part écoulée entre DATE_DEBUT et DATE_LIMITE
+  var tot = DATE_LIMITE.getTime() - DATE_DEBUT.getTime();
+  var ec = Date.now() - DATE_DEBUT.getTime();
+  var p = Math.max(0, Math.min(100, ec/tot*100));
+  $("tl-fill").style.width = p.toFixed(1)+"%";
+}
+
+/* =========================================================
+   RENDU DES STATS
+   ========================================================= */
+function seuil(sc){ return sc>=11 ? "or" : sc>=8 ? "argent" : sc>=5 ? "bronze" : "apprenti"; }
+
+function rendre(rows){
+  var qualif = rows.filter(function(r){ return r.phase === "qualif"; });
+  var finale = rows.filter(function(r){ return r.phase === "finale"; });
+  var uniques = meilleurParPersonne(qualif);      // 1 ligne / personne, triée
+  var nbU = uniques.length;
+  var pct = EFFECTIF_TOTAL ? Math.round(nbU/EFFECTIF_TOTAL*100) : 0;
+
+  /* -- nombre d'essais par personne -- */
+  var essais = {};
+  qualif.forEach(function(r){ var k = r.nom_normalise || normaliser(r.nom); essais[k] = (essais[k]||0)+1; });
+  function nbEssais(r){ return essais[r.nom_normalise || normaliser(r.nom)] || 1; }
+  var rejoueurs = Object.keys(essais).filter(function(k){ return essais[k] > 1; }).length;
+
+  /* -- participation -- */
+  $("p-uniques").textContent = nbU + " / " + EFFECTIF_TOTAL;
+  $("p-eff").textContent = EFFECTIF_TOTAL;
+  $("p-parties").textContent = qualif.length;
+  $("p-rejoue").innerHTML = "🔁 <b>" + rejoueurs + "</b> Sentinelle(s) ont rejoué pour progresser";
+  $("ring-pct").innerHTML = pct + "%<small>de l'effectif</small>";
+  requestAnimationFrame(function(){ $("ring").style.setProperty("--p", pct); });
+
+  /* -- médailles -- */
+  var med = { or:0, argent:0, bronze:0, apprenti:0 };
+  uniques.forEach(function(r){ med[seuil(r.score)]++; });
+  $("med-grid").innerHTML =
+    medCell("🏆", med.or, "Or") + medCell("🥈", med.argent, "Argent") +
+    medCell("🥉", med.bronze, "Bronze") + medCell("💪", med.apprenti, "Apprenti");
+
+  /* -- départements -- */
+  var dept = { FRAIS:0, CAISSE:0, PGC:0 };
+  uniques.forEach(function(r){ if(dept[r.departement]!==undefined) dept[r.departement]++; });
+  var maxD = Math.max(1, dept.FRAIS, dept.CAISSE, dept.PGC);
+  $("dept-zone").innerHTML =
+    deptRow("FRAIS", dept.FRAIS, maxD, "c-frais") +
+    deptRow("CAISSE", dept.CAISSE, maxD, "c-caisse") +
+    deptRow("PGC", dept.PGC, maxD, "c-pgc");
+  animerBarres();
+
+  /* -- champions -- */
+  var champ = {};
+  uniques.forEach(function(r){ var d=r.departement; if(!champ[d] || estMeilleur(r,champ[d])) champ[d]=r; });
+  var medaille = { FRAIS:"🥬", CAISSE:"🛒", PGC:"📦" };
+  var hc = "";
+  ["FRAIS","CAISSE","PGC"].forEach(function(d){
+    var c = champ[d];
+    hc += '<div class="champ"><div class="who"><span class="medal">'+medaille[d]+'</span><span style="min-width:0"><span class="nm">'+
+      (c? echapper(c.nom):"En attente")+'</span><br><span class="dp">'+d+(c&&c.sous_rayon?" · "+echapper(c.sous_rayon):"")+'</span></span></div>'+
+      '<span class="sc">'+(c? c.score+'<small>/'+c.total+'</small>' : "—")+'</span></div>';
+  });
+  $("champ-zone").innerHTML = hc;
+
+  /* -- performances -- */
+  if(nbU){
+    var moy = uniques.reduce(function(a,r){ return a+r.score; },0)/nbU;
+    var parfait = uniques.filter(function(r){ return r.score===r.total; }).length;
+    var temps = uniques.filter(function(r){ return r.duree_ms!=null; }).map(function(r){ return r.duree_ms; });
+    var tmoy = temps.length ? temps.reduce(function(a,b){return a+b;},0)/temps.length : null;
+    var tmin = temps.length ? Math.min.apply(null, temps) : null;
+    $("s-moy").textContent = moy.toFixed(1);
+    $("s-parfait").textContent = parfait;
+    $("s-tmoy").textContent = tmoy!=null ? fmtTemps(tmoy) : "—";
+    $("s-tmin").textContent = tmin!=null ? fmtTemps(tmin) : "—";
+  }
+
+  /* -- sous-rayons FRAIS -- */
+  var sr = {};
+  uniques.forEach(function(r){ if(r.departement==="FRAIS" && r.sous_rayon){ sr[r.sous_rayon]=(sr[r.sous_rayon]||0)+1; } });
+  var keys = Object.keys(sr).sort(function(a,b){ return sr[b]-sr[a]; });
+  if(keys.length){
+    var maxS = Math.max.apply(null, keys.map(function(k){return sr[k];}));
+    $("sray-zone").innerHTML = keys.map(function(k){
+      return '<div class="sray"><span class="lab">'+echapper(k)+'</span><span class="rail"><b data-w="'+(sr[k]/maxS*100)+'"></b></span><span class="val">'+sr[k]+'</span></div>';
+    }).join("");
+    animerBarres();
+  } else {
+    $("sray-zone").innerHTML = '<div class="vide">Aucun joueur FRAIS pour le moment.</div>';
+  }
+
+  /* -- classement -- */
+  if(nbU){
+    var top = uniques.slice(0, 12);
+    var html = '<table class="cl"><thead><tr><th>#</th><th>Sentinelle</th><th>Département</th><th class="num">Score</th><th class="num">Temps</th><th class="num">Essais</th></tr></thead><tbody>';
+    top.forEach(function(r,i){
+      var ne = nbEssais(r);
+      html += '<tr class="'+(i===0?"top1":"")+'"><td>'+(i+1)+'</td><td><span class="nm">'+echapper(r.nom)+'</span></td>'+
+        '<td><span class="badge-dp">'+r.departement+(r.sous_rayon?" · "+echapper(r.sous_rayon):"")+'</span></td>'+
+        '<td class="num"><span class="sc">'+r.score+'</span> /'+r.total+'</td>'+
+        '<td class="num">'+fmtTemps(r.duree_ms)+'</td>'+
+        '<td class="num">'+ne+(ne>1?'<span style="color:var(--or-fonce)"> 🔁</span>':'')+'</td></tr>';
+    });
+    html += '</tbody></table>';
+    if(uniques.length>12) html += '<div class="big-sub" style="margin-top:10px">… et '+(uniques.length-12)+' autre(s) Sentinelle(s).</div>';
+    $("cl-zone").innerHTML = html;
+  } else {
+    $("cl-zone").innerHTML = '<div class="vide">Personne n\'a encore joué. Le classement s\'affichera dès la première partie. 🛡️</div>';
+  }
+
+  /* -- maj -- */
+  $("maj").textContent = "Mis à jour le " + new Date().toLocaleString("fr-FR", { dateStyle:"long", timeStyle:"short" });
+}
+
+function medCell(e,n,t){ return '<div class="med"><div class="e">'+e+'</div><div class="n">'+n+'</div><div class="t">'+t+'</div></div>'; }
+function deptRow(lab,val,max,cls){
+  return '<div class="dept-row"><span class="lab">'+lab+'</span><span class="rail"><b class="'+cls+'" data-w="'+(val/max*100)+'"></b></span><span class="val">'+val+'</span></div>';
+}
+function animerBarres(){
+  requestAnimationFrame(function(){
+    document.querySelectorAll("[data-w]").forEach(function(b){ b.style.width = b.getAttribute("data-w")+"%"; });
+  });
+}
+
+/* =========================================================
+   CHARGEMENT
+   ========================================================= */
+async function charger(){
+  if(DONNEES_FIGEES){ rendre(DONNEES_FIGEES); marquerFige(); return; }
+  if(!db){ $("cl-zone").innerHTML = '<div class="vide">Connexion indisponible.</div>'; return; }
+  try{
+    var res = await db.from("participations").select("*").order("created_at",{ascending:true});
+    if(res.error) throw res.error;
+    rendre(res.data || []);
+    $("live-txt").textContent = "Données en direct";
+  }catch(e){
+    $("live-txt").textContent = "Hors ligne";
+    $("cl-zone").innerHTML = '<div class="vide">Impossible de charger les données pour le moment.</div>';
+  }
+}
+function marquerFige(){
+  var p = $("live-pill");
+  p.classList.add("badge-fige");
+  p.querySelector(".dot").style.background = "var(--rouge)";
+  p.querySelector(".dot").style.animation = "none";
+  $("live-txt").textContent = "Photo figée — 26 juin 2026";
+}
+
+/* reveal au scroll */
+var io = new IntersectionObserver(function(entries){
+  entries.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add("vu"); io.unobserve(en.target); } });
+}, { threshold: .12 });
+document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
+
+/* go */
+majCompteRebours();
+setInterval(majCompteRebours, 1000);
+charger();
+if(!DONNEES_FIGEES) setInterval(charger, 30000); // rafraîchit les stats toutes les 30 s
+</script>
+</body>
+</html>
